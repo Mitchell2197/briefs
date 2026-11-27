@@ -115,7 +115,7 @@ $('counts').innerHTML=cnt.map(([n,c])=>`<div class="ct${c?'':' zero'}"><span cla
 const row=x=>`<div class="it"><div class="fr">${x.flag?'<span class="fl" title="Time-sensitive">◆</span>':''}<span class="su">${e(x.from)}</span></div><span class="su">${e(x.subject)}</span>${x.note||x.why?`<div class="no">${e(x.note||x.why)}</div>`:''}</div>`;
 $('cols').innerHTML=F.map(f=>`<div><h2 style="margin-bottom:14px">${e(f.name)}</h2><div class="box">${(f.items||[]).length?f.items.map(row).join(''):'<div class="empty">Nothing new tonight.</div>'}</div></div>`).join('');
 if(L.length){$('left').innerHTML=L.map(row).join('')}else{$('s-left').remove()}
-$('sample').textContent=B.sample?'Sample content. Tonight’s real pass replaces this.':'';
+$('sample').textContent=B.sample?'Sample content. The next morning pass replaces this.':'';
 $('copy').textContent='Inbox brief for Logan Rhodes · '+(B.date||'');
 }
 </script>
