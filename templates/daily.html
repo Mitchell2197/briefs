@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logan&#39;s Daily Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;800&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* BRAND: Logan Rhodes portfolio — elevated, restrained, focused.
+   COLOUR: #F7F5F0 / #1E1E1D bands, gold #D9A72E accent, forest green #4C6B3F for gains, gold shade #A17E29 for losses.
+   TYPE: three sizes only. H1 = headline + temperature. H2 = section titles. P = everything else.
+   EB Garamond 800 for H1/H2, Inter 300/700 for P. Hierarchy below H2 comes from weight and colour, never size. */
+:root{color-scheme:light;--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--gold-sh:#A17E29;--green:#4C6B3F;--green-t:#C4CCBB;--hair:rgba(30,30,29,.12);--hair-d:rgba(247,245,240,.14);--h1:clamp(38px,6.4vw,60px);--h2:clamp(26px,3.6vw,34px);--p:16px}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 var(--p)/1.6 Inter,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em;overflow-x:clip}
+a{color:inherit}
+b{font-weight:700}
+.band{padding:clamp(36px,6vw,72px) max(5vw,20px)}
+.light{background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
+.dark{background:var(--ink);color:var(--bg)}
+.wrap{max-width:1000px;margin:0 auto}
+.g{color:var(--gold)}
+.date{font-weight:700;display:flex;align-items:center;gap:8px}
+.dia{color:var(--gold)}
+h1{font:800 var(--h1)/1.05 "EB Garamond",Georgia,serif;letter-spacing:0;margin:10px 0 28px;max-width:21ch;text-wrap:balance}
+h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 0 20px}
+h2 small{display:block;font:300 var(--p)/1.4 Inter,sans-serif;color:var(--soft);margin-top:6px;letter-spacing:-.01em}
+.dark h2 small{color:rgba(247,245,240,.6)}
+.wx{background:var(--ink);color:var(--bg);border-radius:25px;padding:clamp(22px,4vw,36px);display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px 30px;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08)}
+.icon{width:88px;height:88px}
+.temp{font:800 var(--h1)/.95 "EB Garamond",Georgia,serif;letter-spacing:0}
+.temp span{font:700 var(--p)/1 Inter,sans-serif;display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;color:rgba(247,245,240,.75)}
+.cond{grid-column:1/-1;border-top:1px solid var(--hair-d);padding-top:18px}
+.cond b{display:block}
+.cond p{margin:4px 0 0;color:rgba(247,245,240,.75)}
+.hours{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end}
+.h{text-align:center;color:rgba(247,245,240,.7)}
+.h b{display:block;color:var(--bg)}
+.bar{height:52px;display:flex;align-items:flex-end;justify-content:center;margin:6px 0}
+.bar i{display:block;width:56%;max-width:30px;background:var(--gold);border-radius:6px 6px 2px 2px}
+.h.rain .bar i{background:var(--green-t)}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,64px)}
+.cal{display:grid;grid-template-columns:6.4em minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--hair)}
+.cal:last-child{border-bottom:0}
+.cal .t{font-weight:700;white-space:nowrap}
+.cal b{display:block}.cal .w{color:var(--soft)}
+.m{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 0;border-bottom:1px solid var(--hair)}
+.m:last-child{border-bottom:0}
+.m .n{font-weight:700}
+.m .v{margin-left:auto;white-space:nowrap;font-variant-numeric:tabular-nums}
+.m .c{font-weight:700;white-space:nowrap;min-width:5.4em;text-align:right;font-variant-numeric:tabular-nums}
+.up{color:var(--green)}.dn{color:var(--gold-sh)}
+.box{background:rgba(247,245,240,.78);border:1px solid var(--hair);border-radius:25px;padding:6px 24px}
+ol{list-style:none;margin:0;padding:0}
+.it{display:grid;grid-template-columns:2em minmax(0,1fr);gap:6px;padding:18px 0;border-bottom:1px solid var(--hair)}
+.dark .it{border-color:var(--hair-d)}
+.it:last-child{border-bottom:0}
+.num{font-weight:700;color:var(--gold)}
+.tag{font-weight:700;color:var(--gold)}
+.ti{font-weight:700;text-decoration:none;display:block}
+a.ti:hover{color:var(--gold)}
+.sum{margin-top:2px;color:var(--soft)}
+.dark .sum{color:rgba(247,245,240,.72)}
+.src{font-weight:700}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-weight:700}
+.srcs a{text-decoration:none}.srcs a:hover{color:var(--gold)}
+.srcs .lbl{color:var(--gold)}
+.base{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--hair-d);margin-top:32px;padding-top:20px;font-weight:700;color:rgba(247,245,240,.6)}
+.sdg{color:var(--gold);letter-spacing:.12em}
+.empty{color:var(--soft)}
+@media(max-width:700px){.duo{grid-template-columns:minmax(0,1fr)}.icon{width:64px;height:64px}.box{padding:4px 18px}.hours{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px}}
+@media(prefers-reduced-motion:no-preference){.bar i{animation:rise .7s ease-out both}@keyframes rise{from{transform:scaleY(0);transform-origin:bottom}}}
+</style>
+</head>
+<body>
+<header class="band light"><div class="wrap">
+  <div class="date"><span class="dia">◆</span><span id="date"></span></div>
+  <h1 id="headline"></h1>
+  <div class="wx" id="wx">
+    <svg class="icon" id="icon" viewBox="0 0 100 100" aria-hidden="true"></svg>
+    <div class="temp" id="temp"></div>
+    <div class="hours" id="hours"></div>
+    <div class="cond"><b id="cond"></b><p id="note"></p></div>
+  </div>
+</div></header>
+
+<section class="band light" style="padding-top:0"><div class="wrap duo">
+  <div id="s-cal"><h2>On the <span class="g">calendar</span></h2><div class="box" id="cal"></div></div>
+  <div id="s-mk"><h2>The <span class="g">markets</span><small id="asof"></small></h2><div class="box" id="mk"></div></div>
+</div></section>
+
+<section class="band dark" id="s-news"><div class="wrap">
+  <h2>Top <span class="g">stories.</span></h2><ol id="news"></ol>
+</div></section>
+
+<section class="band light" id="s-local"><div class="wrap">
+  <h2>Around <span class="g">Dallas.</span></h2><ol id="local"></ol>
+</div></section>
+
+<footer class="band dark"><div class="wrap">
+  <div class="foot">
+    <h2 style="margin:0">Have a <span class="g">good day.</span><small id="sample"></small></h2>
+    <div class="srcs" id="srcs"></div>
+  </div>
+  <div class="base"><span id="copy"></span><span class="sdg">S.D.G.</span></div>
+</div></footer>
+<!--BRIEF-DATA-->
+<script>
+{
+const B=JSON.parse(document.getElementById('brief').textContent);
+const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safe=u=>/^https:\/\//.test(u||'')?e(u):'';
+const $=id=>document.getElementById(id);
+const W=B.weather||{};
+const sky=['sun','partly','cloud','rain','storm','cold'].includes(W.sky)?W.sky:'sun';
+$('date').textContent=B.date||'';
+const hl=B.headline||'',ac=B.accent||'',ix=ac?hl.indexOf(ac):-1;
+$('headline').innerHTML=ix>=0?e(hl.slice(0,ix))+'<span class="g">'+e(ac)+'</span>'+e(hl.slice(ix+ac.length)):e(hl);
+const G='#D9A72E',C='#F7F5F0';
+const sun='<circle cx="50" cy="50" r="19" fill="'+G+'"/>'+Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;return `<line x1="${50+28*Math.cos(a)}" y1="${50+28*Math.sin(a)}" x2="${50+38*Math.cos(a)}" y2="${50+38*Math.sin(a)}" stroke="${G}" stroke-width="5" stroke-linecap="round"/>`}).join('');
+const cloud=(x,y,s,f)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M10 40a14 14 0 0 1 4-27 20 20 0 0 1 37 4 12 12 0 0 1 1 23z" fill="${f}"/></g>`;
+const drops=[30,48,66].map(x=>`<line x1="${x}" y1="76" x2="${x-5}" y2="92" stroke="#C4CCBB" stroke-width="5" stroke-linecap="round"/>`).join('');
+const icons={sun,
+ partly:`<g transform="translate(-10 -12)">${sun}</g>`+cloud(24,34,1.25,C),
+ cloud:cloud(34,12,.9,'#8d8b85')+cloud(8,26,1.4,C),
+ rain:cloud(10,14,1.4,C)+drops,
+ storm:cloud(10,10,1.4,C)+'<path d="M50 62l-10 16h10l-6 16 18-22H52l6-10z" fill="'+G+'"/>',
+ cold:cloud(10,14,1.4,C)+[30,50,70].map(x=>`<text x="${x}" y="96" font-size="20" text-anchor="middle" fill="#C4CCBB">*</text>`).join('')};
+$('icon').innerHTML=icons[sky];
+$('temp').innerHTML=`${e(W.hi)}°<span><span>High ${e(W.hi)}°</span><span>Low ${e(W.lo)}°</span><span>Rain ${e(W.rain)}%</span></span>`;
+$('cond').textContent=W.cond||'';$('note').textContent=W.note||'';
+const hs=W.hours||[],fs=hs.map(h=>+h.f),mn=Math.min(...fs)-4,mx=Math.max(...fs);
+$('hours').innerHTML=hs.map(h=>`<div class="h${(+h.r)>=40?' rain':''}"><b>${e(h.f)}°</b><div class="bar"><i style="height:${Math.max(12,((+h.f-mn)/(mx-mn||1))*100)}%"></i></div>${e(h.t)}</div>`).join('');
+if(!hs.length)$('hours').remove();
+const M=B.markets||{};$('asof').textContent=M.asof||'';
+$('mk').innerHTML=(M.rows||[]).map(r=>{const c=+r.c,up=c>=0;return `<div class="m"><span class="n">${e(r.n)}</span><span class="v">${e(r.v)}</span><span class="c ${up?'up':'dn'}">${up?'▲':'▼'} ${e(Math.abs(c).toFixed(2))}%</span></div>`}).join('');
+if(!(M.rows||[]).length)$('s-mk').remove();
+const item=(x,i)=>{const u=safe(x.url),t=u?`<a class="ti" href="${u}">${e(x.title)}</a>`:`<span class="ti">${e(x.title)}</span>`;return `<li class="it"><div class="num">${i+1}</div><div>${x.tag?`<div class="tag">${e(x.tag)}</div>`:''}${t}<div class="sum">${e(x.sum)} <span class="src">— ${e(x.src)}</span></div></div></li>`};
+$('news').innerHTML=(B.news||[]).map(item).join('');if(!(B.news||[]).length)$('s-news').remove();
+$('local').innerHTML=(B.local||[]).map(item).join('');if(!(B.local||[]).length)$('s-local').remove();
+$('cal').innerHTML=(B.cal||[]).length?(B.cal||[]).map(c=>`<div class="cal"><div class="t">${e(c.t)}</div><div><b>${e(c.title)}</b>${c.where?`<div class="w">${e(c.where)}</div>`:''}</div></div>`).join(''):'<div class="cal"><div class="empty" style="grid-column:1/-1">Nothing scheduled. The day is yours.</div></div>';
+$('srcs').innerHTML='<span class="lbl">Sources</span>'+(B.sources||[]).map(s=>{const u=safe(s.url);return u?`<a href="${u}">${e(s.n)}</a>`:`<span>${e(s.n)}</span>`}).join('');
+$('sample').textContent=B.sample?'Sample content. The first real brief replaces this tomorrow morning.':'';
+$('copy').textContent='Daily brief for Logan Rhodes · '+(B.date||'');
+}
+</script>
+</body>
+</html>
+

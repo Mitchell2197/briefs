@@ -1,0 +1,126 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Logan&#39;s Gym Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;800&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* BRAND: Logan Rhodes portfolio — same system as the Daily Brief.
+   COLOUR: #F7F5F0 / #1E1E1D bands, gold #D9A72E accent, forest green #4C6B3F for progress.
+   TYPE: three sizes only. H1 = headline + session name. H2 = section titles. P = everything else.
+   EB Garamond 800 for H1/H2, Inter 300/700 for P. Hierarchy below H2 comes from weight and colour, never size. */
+:root{color-scheme:light;--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--green:#4C6B3F;--hair:rgba(30,30,29,.12);--hair-d:rgba(247,245,240,.14);--h1:clamp(38px,6.4vw,60px);--h2:clamp(26px,3.6vw,34px);--p:16px}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 var(--p)/1.6 Inter,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em;overflow-x:clip}
+a{color:inherit}
+b{font-weight:700}
+.band{padding:clamp(36px,6vw,72px) max(5vw,20px)}
+.light{background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
+.dark{background:var(--ink);color:var(--bg)}
+.wrap{max-width:1000px;margin:0 auto}
+.g{color:var(--gold)}
+.date{font-weight:700;display:flex;align-items:center;gap:8px}
+.dia{color:var(--gold)}
+h1{font:800 var(--h1)/1.05 "EB Garamond",Georgia,serif;letter-spacing:0;margin:10px 0 28px;max-width:21ch;text-wrap:balance}
+h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 0 20px}
+h2 small{display:block;font:300 var(--p)/1.4 Inter,sans-serif;color:var(--soft);margin-top:6px;letter-spacing:-.01em}
+.dark h2 small{color:rgba(247,245,240,.6)}
+.card{background:var(--ink);color:var(--bg);border-radius:25px;padding:clamp(22px,4vw,36px);display:grid;gap:18px;box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08)}
+.sess{font:800 var(--h1)/1 "EB Garamond",Georgia,serif;letter-spacing:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px 10px}
+.chip{font-weight:700;border:1px solid var(--hair-d);border-radius:999px;padding:4px 14px;color:rgba(247,245,240,.85);display:flex;gap:6px;align-items:center}
+.chip i{font-style:normal;color:var(--gold)}
+.focus{border-top:1px solid var(--hair-d);padding-top:16px;color:rgba(247,245,240,.75)}
+.focus b{display:block;color:var(--bg)}
+.flag{font-weight:700;color:var(--ink);background:var(--gold);border-radius:999px;padding:6px 14px;justify-self:start}
+.box{background:rgba(247,245,240,.78);border:1px solid var(--hair);border-radius:25px;padding:6px 24px}
+.row{display:grid;grid-template-columns:2em minmax(0,1fr) auto;gap:6px 14px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--hair)}
+.row:last-child{border-bottom:0}
+.num{font-weight:700;color:var(--gold)}
+.ex{font-weight:700}
+.nt{color:var(--soft)}
+.sr{text-align:right;white-space:nowrap}
+.sr b{display:block;font-variant-numeric:tabular-nums}
+.sr span{color:var(--soft)}
+ol{list-style:none;margin:0;padding:0}
+.it{display:grid;grid-template-columns:2em minmax(0,1fr);gap:6px;padding:20px 0;border-bottom:1px solid var(--hair-d)}
+.it:last-child{border-bottom:0}
+.it .ex{margin-bottom:6px}
+.steps{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:4.6em minmax(0,1fr);gap:10px;color:rgba(247,245,240,.78)}
+.steps .k{font-weight:700;color:rgba(247,245,240,.55)}
+.steps li.avoid .k{color:var(--gold)}
+.steps li.avoid{color:var(--bg)}
+.ov{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center}
+.ov .up{font:800 var(--h2)/1 "EB Garamond",serif;color:var(--green)}
+.ov p{margin:0}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;align-items:flex-end}
+.base{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--hair-d);margin-top:32px;padding-top:20px;font-weight:700;color:rgba(247,245,240,.6)}
+.sdg{color:var(--gold);letter-spacing:.12em}
+@media(max-width:700px){.box{padding:4px 18px}.row{grid-template-columns:2em minmax(0,1fr)}.sr{grid-column:2;text-align:left;display:flex;gap:10px;align-items:baseline}.sr b{display:inline}.steps li{grid-template-columns:minmax(0,1fr);gap:0}}
+</style>
+
+<header class="band light"><div class="wrap">
+  <div class="date"><span class="dia">◆</span><span id="date"></span></div>
+  <h1 id="headline"></h1>
+  <div class="card">
+    <div class="sess" id="sess"></div>
+    <div class="chips" id="chips"></div>
+    <div class="focus" id="focus"></div>
+    <div class="flag" id="flag" hidden>Suggested session. The calendar event had no exercise list.</div>
+  </div>
+</div></header>
+
+<section class="band light" id="s-plan" style="padding-top:0"><div class="wrap">
+  <h2>The <span class="g">plan.</span><small id="plansub"></small></h2>
+  <div class="box" id="plan"></div>
+</div></section>
+
+<section class="band dark" id="s-how"><div class="wrap">
+  <h2>How to <span class="g">do it.</span><small>Setup, the movement, and the mistake to avoid.</small></h2>
+  <ol id="how"></ol>
+</div></section>
+
+<section class="band light" id="s-ov"><div class="wrap">
+  <div class="box" style="padding:22px 24px"><div class="ov"><span class="up">▲</span><p id="ov"></p></div></div>
+</div></section>
+
+<footer class="band dark"><div class="wrap">
+  <div class="foot">
+    <h2 style="margin:0" id="sign">Train <span class="g">hard.</span><small id="sample"></small></h2>
+  </div>
+  <div class="base"><span id="copy"></span><span class="sdg">S.D.G.</span></div>
+</div></footer>
+<!--BRIEF-DATA-->
+<script>
+{
+const B=JSON.parse(document.getElementById('brief').textContent);
+const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+$('date').textContent=B.date||'';
+const hl=B.headline||'',ac=B.accent||'',ix=ac?hl.indexOf(ac):-1;
+$('headline').innerHTML=ix>=0?e(hl.slice(0,ix))+'<span class="g">'+e(ac)+'</span>'+e(hl.slice(ix+ac.length)):e(hl);
+const P=B.plan||[];
+const rest=!!B.rest;
+$('sess').textContent=rest?'Rest day':(B.session||'');
+const chips=[];
+if(!rest){if(B.time)chips.push(B.time);if(B.where)chips.push(B.where);if(B.minutes)chips.push('About '+B.minutes+' min');if(P.length)chips.push(P.length+' exercises');}
+$('chips').innerHTML=chips.map(c=>`<span class="chip"><i>◆</i>${e(c)}</span>`).join('');
+if(!chips.length)$('chips').remove();
+$('focus').innerHTML=rest?`<b>Recover.</b>${e(B.note||'No workout on the calendar today.')}`:(B.focus?`<b>${e(B.focus)}</b>${B.note?e(B.note):''}`:'');
+if(!$('focus').innerHTML)$('focus').remove();
+$('flag').hidden=rest||!B.suggested;
+if(rest||!P.length){$('s-plan').remove();$('s-how').remove();}
+else{
+  $('plansub').textContent='Sets x reps, rest between sets, and cues.';
+  $('plan').innerHTML=P.map((p,i)=>`<div class="row"><div class="num">${i+1}</div><div><div class="ex">${e(p.ex)}</div>${p.note?`<div class="nt">${e(p.note)}</div>`:''}</div><div class="sr"><b>${e(p.sr)}</b><span>Rest ${e(p.rest)}</span></div></div>`).join('');
+  const H=P.filter(p=>(p.how||[]).length);
+  $('how').innerHTML=P.map((p,i)=>(p.how||[]).length?`<li class="it"><div class="num">${i+1}</div><div><div class="ex">${e(p.ex)}</div><ul class="steps">${p.how.map(s=>`<li class="${/avoid|mistake/i.test(s.k||'')?'avoid':''}"><span class="k">${e(s.k)}</span><span>${e(s.t)}</span></li>`).join('')}</ul></div></li>`:'').join('');
+  if(!H.length)$('s-how').remove();
+}
+if(rest||!B.overload)$('s-ov').remove();else $('ov').textContent=B.overload;
+if(rest)$('sign').innerHTML='Rest <span class="g">well.</span><small id="sample"></small>';
+$('sample').textContent=B.sample?'Sample content. The next scheduled run replaces this.':'';
+$('copy').textContent='Gym brief for Logan Rhodes · '+(B.date||'');
+}
+</script>
+
+</body></html>

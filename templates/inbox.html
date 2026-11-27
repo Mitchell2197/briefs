@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logan&#39;s Inbox Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;800&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* BRAND: Logan Rhodes portfolio, matching the Daily Brief and Gym Brief. Elevated, restrained, focused.
+   IDEA: an evening sorting report: one thing to act on, then the night's mail filed folder by folder.
+   COLOUR: #F7F5F0 / #1E1E1D bands, gold #D9A72E accent, forest green #4C6B3F for "all clear", gold shade #A17E29 for flags.
+   TYPE: three sizes only. H1 = headline + big counts. H2 = section titles. P = everything else.
+   LAYOUT: light header with action card, folder columns, dark "left in inbox" band, footer. Hierarchy below H2 from weight and colour. */
+:root{color-scheme:light;--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--gold-sh:#A17E29;--green:#4C6B3F;--green-t:#C4CCBB;--hair:rgba(30,30,29,.12);--hair-d:rgba(247,245,240,.14);--h1:clamp(38px,6.4vw,60px);--h2:clamp(26px,3.6vw,34px);--p:16px}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 var(--p)/1.6 Inter,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em;overflow-x:clip}
+b{font-weight:700}
+.band{padding:clamp(36px,6vw,72px) max(5vw,20px)}
+.light{background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
+.dark{background:var(--ink);color:var(--bg)}
+.wrap{max-width:1000px;margin:0 auto}
+.g{color:var(--gold)}
+.date{font-weight:700;display:flex;align-items:center;gap:8px}
+.dia{color:var(--gold)}
+h1{font:800 var(--h1)/1.05 "EB Garamond",Georgia,serif;letter-spacing:0;margin:10px 0 28px;max-width:21ch;text-wrap:balance}
+h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 0 20px}
+h2 small{display:block;font:300 var(--p)/1.4 Inter,sans-serif;color:var(--soft);margin-top:6px;letter-spacing:-.01em}
+.dark h2 small{color:rgba(247,245,240,.6)}
+.card{background:var(--ink);color:var(--bg);border-radius:25px;padding:clamp(22px,4vw,36px);box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08)}
+.act{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px 22px;align-items:start;padding-bottom:22px;border-bottom:1px solid var(--hair-d)}
+.act svg{width:56px;height:56px}
+.lbl{font-weight:700;color:var(--gold)}
+.act.ok .lbl{color:var(--green-t)}
+.act .tx{font-weight:700;margin-top:2px}
+.act p{margin:4px 0 0;color:rgba(247,245,240,.75)}
+.counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding-top:22px}
+.ct{text-align:left}
+.ct .n{font:800 var(--h1)/.95 "EB Garamond",Georgia,serif;display:block}
+.ct.zero .n{color:rgba(247,245,240,.35)}
+.ct span{font-weight:700;color:rgba(247,245,240,.75)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,36px)}
+.box{background:rgba(247,245,240,.78);border:1px solid var(--hair);border-radius:25px;padding:6px 22px}
+.it{padding:14px 0;border-bottom:1px solid var(--hair)}
+.dark .it{border-color:var(--hair-d)}
+.it:last-child{border-bottom:0}
+.fr{font-weight:700;display:flex;gap:8px;align-items:baseline}
+.fl{color:var(--gold-sh);flex:none}
+.su{display:block;overflow-wrap:anywhere}
+.no{color:var(--soft)}
+.dark .no{color:rgba(247,245,240,.72)}
+.empty{color:var(--soft);padding:14px 0}
+.dark .empty{color:rgba(247,245,240,.6)}
+.left{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 clamp(28px,5vw,64px)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;align-items:flex-end}
+.rules{font-weight:700;color:rgba(247,245,240,.6)}
+.base{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--hair-d);margin-top:32px;padding-top:20px;font-weight:700;color:rgba(247,245,240,.6)}
+.sdg{color:var(--gold);letter-spacing:.12em}
+@media(max-width:800px){.cols{grid-template-columns:minmax(0,1fr)}.left{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:520px){.counts{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px}.act svg{width:44px;height:44px}.box{padding:4px 18px}}
+@media(prefers-reduced-motion:no-preference){.ct .n{animation:up .6s ease-out both}@keyframes up{from{opacity:0;transform:translateY(8px)}}}
+</style>
+</head>
+<body>
+<header class="band light"><div class="wrap">
+  <div class="date"><span class="dia">◆</span><span id="date"></span></div>
+  <h1 id="headline"></h1>
+  <div class="card">
+    <div class="act" id="act">
+      <svg viewBox="0 0 100 100" aria-hidden="true" id="icon"></svg>
+      <div><div class="lbl" id="alabel"></div><div class="tx" id="atext"></div><p id="adetail"></p></div>
+    </div>
+    <div class="counts" id="counts"></div>
+  </div>
+</div></header>
+
+<section class="band light" style="padding-top:0"><div class="wrap">
+  <h2>Filed <span class="g">tonight.</span><small>Moved and marked read this run.</small></h2>
+  <div class="cols" id="cols"></div>
+</div></section>
+
+<section class="band dark" id="s-left"><div class="wrap">
+  <h2>Left in the <span class="g">inbox.</span><small>Didn't clearly fit a folder.</small></h2>
+  <div class="left" id="left"></div>
+</div></section>
+
+<footer class="band dark"><div class="wrap">
+  <div class="foot">
+    <h2 style="margin:0">Inbox <span class="g">handled.</span><small id="sample"></small></h2>
+    <div class="rules">Read, sort and report only. Nothing replied to or deleted.</div>
+  </div>
+  <div class="base"><span id="copy"></span><span class="sdg">S.D.G.</span></div>
+</div></footer>
+<!--BRIEF-DATA-->
+<script>
+{
+const B=JSON.parse(document.getElementById('brief').textContent);
+const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+$('date').textContent=B.date||'';
+const hl=B.headline||'',ac=B.accent||'',ix=ac?hl.indexOf(ac):-1;
+$('headline').innerHTML=ix>=0?e(hl.slice(0,ix))+'<span class="g">'+e(ac)+'</span>'+e(hl.slice(ix+ac.length)):e(hl);
+const A=B.action||{},urgent=!!A.urgent;
+$('act').classList.toggle('ok',!urgent);
+$('alabel').textContent=urgent?'Action needed':'All clear';
+$('atext').textContent=A.text||(urgent?'':'Nothing urgent tonight.');
+$('adetail').textContent=A.detail||'';
+$('icon').innerHTML=urgent
+ ?'<rect x="10" y="24" width="80" height="54" rx="8" fill="none" stroke="#F7F5F0" stroke-width="5"/><path d="M12 28l38 28 38-28" fill="none" stroke="#F7F5F0" stroke-width="5" stroke-linejoin="round"/><circle cx="80" cy="24" r="14" fill="#D9A72E"/><rect x="77.5" y="15" width="5" height="11" rx="2" fill="#1E1E1D"/><circle cx="80" cy="31" r="2.8" fill="#1E1E1D"/>'
+ :'<rect x="10" y="24" width="80" height="54" rx="8" fill="none" stroke="#F7F5F0" stroke-width="5"/><path d="M12 28l38 28 38-28" fill="none" stroke="#F7F5F0" stroke-width="5" stroke-linejoin="round"/><circle cx="80" cy="24" r="14" fill="#C4CCBB"/><path d="M73 24l5 5 9-10" fill="none" stroke="#1E1E1D" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
+const F=['Personal','Financial','Shopping'].map(n=>(B.folders||[]).find(f=>f.name===n)||{name:n,items:[]});
+const L=B.inbox||[];
+const cnt=[...F.map(f=>[f.name,(f.items||[]).length]),['Inbox left',L.length]];
+$('counts').innerHTML=cnt.map(([n,c])=>`<div class="ct${c?'':' zero'}"><span class="n">${e(c)}</span><span>${e(n)}</span></div>`).join('');
+const row=x=>`<div class="it"><div class="fr">${x.flag?'<span class="fl" title="Time-sensitive">◆</span>':''}<span class="su">${e(x.from)}</span></div><span class="su">${e(x.subject)}</span>${x.note||x.why?`<div class="no">${e(x.note||x.why)}</div>`:''}</div>`;
+$('cols').innerHTML=F.map(f=>`<div><h2 style="margin-bottom:14px">${e(f.name)}</h2><div class="box">${(f.items||[]).length?f.items.map(row).join(''):'<div class="empty">Nothing new tonight.</div>'}</div></div>`).join('');
+if(L.length){$('left').innerHTML=L.map(row).join('')}else{$('s-left').remove()}
+$('sample').textContent=B.sample?'Sample content. Tonight’s real pass replaces this.':'';
+$('copy').textContent='Inbox brief for Logan Rhodes · '+(B.date||'');
+}
+</script>
+</body>
+</html>

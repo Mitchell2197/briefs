@@ -1,0 +1,41 @@
+name: Notify phone
+on:
+  push:
+    branches: [main]
+    paths: ['data/*.json']
+  workflow_dispatch:
+    inputs:
+      brief:
+        description: 'Brief to re-send (daily, gym or inbox)'
+        default: 'daily'
+permissions:
+  contents: read
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save web-push@3.6.7
+      - name: Find changed briefs
+        id: diff
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "files=data/${{ inputs.brief }}.json" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            echo "files=$(ls data/*.json | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          else
+            echo "files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- data | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Send push
+        env:
+          VAPID_PUBLIC: ${{ secrets.VAPID_PUBLIC }}
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          PUSH_SUBSCRIPTIONS: ${{ secrets.PUSH_SUBSCRIPTIONS }}
+          CHANGED: ${{ steps.diff.outputs.files }}
+        run: node tools/send-push.mjs

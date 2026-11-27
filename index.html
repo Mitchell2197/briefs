@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Logan's Briefs</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Briefs">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1E1E1D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@800&family=Inter:wght@300;700&display=swap" rel="stylesheet">
+<style>
+/* BRAND: Logan Rhodes. Same system as every brief: #F7F5F0 / #1E1E1D, gold #D9A72E, forest #4C6B3F.
+   IDEA: a slim dark case that holds the day's three briefs; the brief itself is the picture.
+   TYPE: three sizes. H1 = lock-screen title. H2 = sheet titles. P = everything else.
+   LAYOUT: brief fills the screen, dark tab bar at the bottom, settings slide up as a sheet. */
+:root{--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--green:#4C6B3F;--hair-d:rgba(247,245,240,.14);--h1:clamp(38px,9vw,56px);--h2:28px;--p:16px}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--ink);color:var(--bg);font:300 var(--p)/1.55 Inter,-apple-system,sans-serif;letter-spacing:-.01em;display:flex;flex-direction:column;overflow:hidden}
+b{font-weight:700}
+.g{color:var(--gold)}
+main{flex:1;position:relative;background:var(--bg)}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+.state{position:absolute;inset:0;display:grid;place-items:center;padding:32px;text-align:center;color:var(--soft);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
+.state b{display:block;color:var(--ink)}
+nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;border-top:1px solid var(--hair-d);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+nav button{all:unset;cursor:pointer;min-height:52px;display:grid;align-content:center;justify-items:center;gap:0;border-radius:14px;color:rgba(247,245,240,.55);text-align:center;padding:0 8px}
+nav button b{color:inherit}
+nav button span{font-size:13px}
+nav button[aria-current=true]{color:var(--bg)}
+nav button[aria-current=true] b::before{content:"◆ ";color:var(--gold)}
+nav button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;margin-left:4px;vertical-align:middle}
+.lock,.sheet{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:calc(32px + env(safe-area-inset-top)) max(6vw,22px) calc(32px + env(safe-area-inset-bottom))}
+.lock{background:var(--ink)}
+.lock .wrap{max-width:460px;width:100%;margin:0 auto}
+.dia{color:var(--gold);font-weight:700}
+h1{font:800 var(--h1)/1.05 "EB Garamond",Georgia,serif;letter-spacing:0;margin:10px 0 14px;text-wrap:balance}
+h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 0 6px}
+.muted{color:rgba(247,245,240,.65);margin:0 0 22px}
+label{display:block;font-weight:700;margin-bottom:8px}
+input{width:100%;font:400 16px Inter,sans-serif;padding:14px 16px;border-radius:14px;border:1px solid var(--hair-d);background:rgba(247,245,240,.06);color:var(--bg)}
+.btn{all:unset;cursor:pointer;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;margin-top:14px}
+.btn.ghost{background:transparent;color:var(--bg);border:1px solid var(--hair-d)}
+.err{color:var(--gold);font-weight:700;min-height:1.6em;margin-top:10px}
+.sheet{background:rgba(0,0,0,.45);justify-content:flex-end;padding:0}
+.panel{background:var(--ink);border-radius:25px 25px 0 0;padding:26px max(6vw,22px) calc(26px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;border-top:1px solid var(--hair-d)}
+.sec{padding:18px 0;border-bottom:1px solid var(--hair-d)}
+.sec:last-child{border-bottom:0}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;padding:12px;border-radius:14px;border:1px solid var(--hair-d);background:rgba(247,245,240,.06);color:var(--bg);resize:vertical}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main id="main">
+  <div class="state" id="state"><div><b>Loading your brief…</b></div></div>
+  <iframe id="frame" title="Brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" hidden></iframe>
+</main>
+<nav id="tabs" aria-label="Briefs">
+  <button data-k="daily"><b>Daily</b><span id="t-daily">–</span></button>
+  <button data-k="gym"><b>Gym</b><span id="t-gym">–</span></button>
+  <button data-k="inbox"><b>Inbox</b><span id="t-inbox">–</span></button>
+  <button id="more" aria-label="Settings"><b>⋯</b><span>More</span></button>
+</nav>
+
+<div class="lock" id="lock" hidden><div class="wrap">
+  <div class="dia">◆ Logan's Briefs</div>
+  <h1>Your briefs, <span class="g">Logan.</span></h1>
+  <p class="muted">Enter your passphrase once. It stays on this phone and unlocks your Daily, Gym and Inbox briefs.</p>
+  <form id="unlock">
+    <label for="pass">Passphrase</label>
+    <input id="pass" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" required>
+    <button class="btn" type="submit">Unlock</button>
+    <div class="err" id="perr" role="alert"></div>
+  </form>
+</div></div>
+
+<div class="sheet" id="sheet" hidden><div class="panel" role="dialog" aria-label="Settings">
+  <div class="sec">
+    <h2>Notifications</h2>
+    <p class="muted" id="nstat" style="margin-bottom:0"></p>
+    <div class="row"><button class="btn" id="sub">Turn on notifications</button></div>
+  </div>
+  <div class="sec" id="subbox" hidden>
+    <h2>Your phone's <span class="g">push code</span></h2>
+    <p class="muted">Copy this and paste it to Claude in chat. It's how GitHub knows where to send your briefs.</p>
+    <textarea id="subjson" readonly></textarea>
+    <div class="row"><button class="btn" id="copy">Copy code</button></div>
+  </div>
+  <div class="sec">
+    <h2>This phone</h2>
+    <div class="row">
+      <button class="btn ghost" id="reload">Refresh briefs</button>
+      <button class="btn ghost" id="forget">Forget passphrase</button>
+      <button class="btn ghost" id="close">Close</button>
+    </div>
+  </div>
+</div></div>
+
+<script>
+{
+const VAPID = 'BIC7o_IJh_hfaNO-Vi2aSRDX3JIESpIUbO2zBJEsXyE45XY9ribifPQwuGRGRj9w0DG8MN3Sxv86uYdxJ_QYZcI';
+const KINDS = ['daily', 'gym', 'inbox'];
+const $ = id => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+let pass = store.get('briefs-pass') || memPass();
+function memPass() { return window.__pass || null; }
+const cache = {}, tpl = {};
+const ub = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function decrypt(env, pw) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: ub(env.salt), iterations: 310000, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub(env.iv) }, key, ub(env.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function getEnv(k) {
+  const r = await fetch('data/' + k + '.json?t=' + Date.now(), { cache: 'no-store' });
+  if (!r.ok) throw new Error('missing');
+  return r.json();
+}
+async function getTpl(k) {
+  if (!tpl[k]) { const r = await fetch('templates/' + k + '.html'); tpl[k] = await r.text(); }
+  return tpl[k];
+}
+function when(iso) {
+  const d = new Date(iso); if (isNaN(d)) return '–';
+  const today = new Date().toDateString() === d.toDateString();
+  return today ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+               : d.toLocaleDateString([], { weekday: 'short' });
+}
+function seen(k, iso) { return store.get('seen-' + k) === iso; }
+
+async function loadAll() {
+  await Promise.all(KINDS.map(async k => {
+    try {
+      const env = await getEnv(k);
+      cache[k] = { env };
+      $('t-' + k).innerHTML = when(env.updated) + (seen(k, env.updated) ? '' : '<i class="dot" aria-label="new"></i>');
+    } catch { $('t-' + k).textContent = '–'; }
+  }));
+}
+
+async function show(k) {
+  if (!KINDS.includes(k)) k = 'daily';
+  document.querySelectorAll('nav button[data-k]').forEach(b => b.setAttribute('aria-current', b.dataset.k === k));
+  const frame = $('frame'), st = $('state');
+  const c = cache[k];
+  if (!c) { frame.hidden = true; st.hidden = false; st.innerHTML = '<div><b>No brief yet.</b>It shows up here after its next scheduled run.</div>'; return; }
+  try {
+    const data = c.data || (c.data = await decrypt(c.env, pass));
+    const html = (await getTpl(k)).replace('<!--BRIEF-DATA-->',
+      '<script type="application/json" id="brief">' + JSON.stringify(data).replace(/</g, '\\u003c') + '<\/script>' +
+      '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a){a.target="_blank";a.rel="noopener"}},true)<\/script>');
+    frame.srcdoc = html; frame.hidden = false; st.hidden = true;
+    store.set('seen-' + k, c.env.updated);
+    $('t-' + k).textContent = when(c.env.updated);
+  } catch (err) {
+    frame.hidden = true; st.hidden = false;
+    st.innerHTML = '<div><b>Couldn’t unlock this brief.</b>The passphrase may have changed. Open More → Forget passphrase.</div>';
+  }
+}
+const route = () => show((location.hash || '#daily').slice(1));
+
+async function start() {
+  if (!pass) { $('lock').hidden = false; $('pass').focus(); return; }
+  $('lock').hidden = true;
+  await loadAll(); route();
+}
+
+$('unlock').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const pw = $('pass').value.trim(); $('perr').textContent = '';
+  try {
+    const any = KINDS.find(k => cache[k]) || (await loadAll(), KINDS.find(k => cache[k]));
+    if (any) await decrypt(cache[any].env, pw);
+    pass = pw; window.__pass = pw; store.set('briefs-pass', pw);
+    $('pass').value = ''; start();
+  } catch { $('perr').textContent = 'That passphrase didn’t work. Check it and try again.'; }
+});
+
+document.querySelectorAll('nav button[data-k]').forEach(b => b.addEventListener('click', () => {
+  if (location.hash === '#' + b.dataset.k) show(b.dataset.k); else location.hash = b.dataset.k;
+}));
+addEventListener('hashchange', route);
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && pass) { const k = (location.hash || '#daily').slice(1); const before = cache[k] && cache[k].env.updated; await loadAll(); if (cache[k] && cache[k].env.updated !== before) show(k); }
+});
+
+// Settings sheet
+const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+function notifStatus() {
+  const ok = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  if (!isStandalone) return 'Add this to your Home Screen first (Share → Add to Home Screen), then open it from the icon.';
+  if (!ok) return 'This phone’s browser doesn’t support push for web apps. iOS 16.4 or later is needed.';
+  if (Notification.permission === 'granted') return 'On. Tap below to show your push code again.';
+  if (Notification.permission === 'denied') return 'Blocked. Turn them on in Settings → Notifications → Briefs.';
+  return 'Off. Tap below and allow notifications.';
+}
+$('more').addEventListener('click', () => { $('nstat').textContent = notifStatus(); $('sheet').hidden = false; });
+$('close').addEventListener('click', () => { $('sheet').hidden = true; });
+$('sheet').addEventListener('click', e => { if (e.target === $('sheet')) $('sheet').hidden = true; });
+$('reload').addEventListener('click', async () => { KINDS.forEach(k => cache[k] && (cache[k].data = null)); await loadAll(); $('sheet').hidden = true; route(); });
+$('forget').addEventListener('click', () => { store.del('briefs-pass'); pass = null; window.__pass = null; $('sheet').hidden = true; start(); });
+
+function b64u(s) { const p = '='.repeat((4 - s.length % 4) % 4); return ub((s + p).replace(/-/g, '+').replace(/_/g, '/')); }
+$('sub').addEventListener('click', async () => {
+  try {
+    if (!isStandalone) { $('nstat').textContent = notifStatus(); return; }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { $('nstat').textContent = notifStatus(); return; }
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) ||
+      await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID) });
+    $('subjson').value = JSON.stringify(sub);
+    $('subbox').hidden = false; $('nstat').textContent = notifStatus();
+  } catch (err) { $('nstat').textContent = 'Couldn’t turn on notifications: ' + (err && err.message || err); }
+});
+$('copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('subjson').value); $('copy').textContent = 'Copied'; }
+  catch { $('subjson').select(); $('copy').textContent = 'Select all and copy'; }
+});
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.open) { const h = new URL(e.data.open).hash; if (h) location.hash = h; loadAll().then(route); }
+  });
+}
+start();
+}
+</script>
+</body>
+</html>
