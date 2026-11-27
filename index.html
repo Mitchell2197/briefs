@@ -99,7 +99,7 @@ h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 
 /* Hidden verse page: same structure as the portfolio's Soli Deo Gloria page */
 .page.verse{color:var(--ink);background:var(--ink)}
 .verse .band{padding:var(--top-pad) max(5vw,20px) 40px}
-.verse .hero{background:var(--ink) radial-gradient(rgba(247,245,240,.14) 1px,transparent 1.2px) 0 0/26px 26px;color:var(--bg);padding-bottom:36px}
+.verse .hero{background:radial-gradient(rgba(247,245,240,.14) 1px,transparent 1.2px) 0 0/26px 26px,linear-gradient(to bottom,var(--bg) 0,var(--ink) 78px,var(--ink) 100%);color:var(--bg);padding-top:calc(var(--top-pad) + 70px);padding-bottom:36px}
 .verse .hero .date{color:var(--bg)}
 .verse .hero h1{margin:10px 0 8px}
 .verse .hero .sub{color:rgba(247,245,240,.55);margin:0}
@@ -591,7 +591,7 @@ async function go(k, opts = {}) {
   if (location.hash !== '#' + k) history.replaceState(null, '', '#' + k);
   const prev = current; current = k;
   ORDER.forEach(x => btn(x).setAttribute('aria-current', x === k));
-  $('dock').classList.toggle('away', k === 'verse'); document.querySelector('.topfade').classList.toggle('dark', k === 'verse'); document.querySelector('meta[name=theme-color]').setAttribute('content', k === 'verse' ? '#1E1E1D' : '#F7F5F0'); $('homebtn').classList.toggle('on', k === 'verse');
+  $('dock').classList.toggle('away', k === 'verse'); $('homebtn').classList.toggle('on', k === 'verse');
   if (k === 'verse') renderVerse();
   setMini(false); placeLens(!!prev && !opts.instant);
   if (k === 'today') await renderToday(); else if (k !== 'verse') await renderBrief(k);
