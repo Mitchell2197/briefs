@@ -228,7 +228,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 function measure(prop) { const d = document.createElement('div'); d.style.cssText = 'position:fixed;visibility:hidden;padding-top:' + prop; document.body.appendChild(d); const v = parseFloat(getComputedStyle(d).paddingTop) || 0; d.remove(); return v; }
 function frameExtras() {
   const top = measure('var(--safe-top)'), gap = measure('var(--bar-gap)');
-  return '<style>html,body{overflow:hidden!important;height:auto!important}header.band{padding-top:' + (top + 24) + 'px!important}footer.band{padding-bottom:' + (gap + 110) + 'px!important}html{-webkit-text-size-adjust:100%}</style>' +
+  return '<style>html,body{overflow:hidden!important;height:auto!important}:root{padding:0!important;background:transparent}header.band{padding-top:' + (top + 24) + 'px!important}footer.band{padding-bottom:' + (gap + 110) + 'px!important}html{-webkit-text-size-adjust:100%}</style>' +
     '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a){a.target="_blank";a.rel="noopener"}},true);' +
     'function bg(el){while(el){var c=getComputedStyle(el).backgroundColor;if(c&&c!=="transparent"&&!/rgba\\([^)]*,\\s*0\\)/.test(c))return c;el=el.parentElement}return ""}' +
     'function h(){var b=document.body;parent.postMessage({briefHeight:Math.max(document.documentElement.scrollHeight,b?b.scrollHeight:0),top:bg(document.querySelector("header")||(b&&b.firstElementChild)),bottom:bg(document.querySelector("footer")||(b&&b.lastElementChild))},"*")}' +
