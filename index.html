@@ -13,83 +13,102 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@800&family=Inter:wght@300;700&display=swap" rel="stylesheet">
 <style>
-/* BRAND: Logan Rhodes. Same system as every brief: #F7F5F0 / #1E1E1D, gold #D9A72E, forest #4C6B3F.
-   IDEA: a slim dark case that holds the day's three briefs; the brief itself is the picture.
-   TYPE: three sizes. H1 = lock-screen title. H2 = sheet titles. P = everything else.
-   LAYOUT: brief fills the screen, dark tab bar at the bottom, settings slide up as a sheet. */
-:root{--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--green:#4C6B3F;--hair-d:rgba(247,245,240,.14);--h1:clamp(38px,6.4vw,60px);--h2:clamp(26px,3.6vw,34px);--p:16px;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);--top-pad:calc(var(--safe-top) + 24px);--bar-gap:max(10px,calc(var(--safe-bot) - 12px));--glass:rgba(30,30,29,.68);--glass-edge:rgba(247,245,240,.22)}
-*{box-sizing:border-box;min-width:0}
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--bg);font:300 var(--p)/1.55 Inter,-apple-system,sans-serif;letter-spacing:-.01em;display:flex;flex-direction:column;overflow:hidden}
-b{font-weight:700}
-.g{color:var(--gold)}
-main{flex:1;position:relative;background:var(--bg)}
-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
-.state{position:absolute;inset:0;padding-top:var(--top-pad)!important;display:grid;place-items:center;padding:32px;text-align:center;color:var(--soft);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
+/* BRAND: Logan Rhodes. #F7F5F0 / #1E1E1D, gold #D9A72E. Same system as every brief.
+   IDEA: four pages held side by side; a Liquid Glass tab bar with one lens that glides between tabs.
+   TYPE: three sizes. H1 = page titles (matches the briefs). H2 = sheet titles and card headlines. P = everything else.
+   LAYOUT: app sized to the real screen (iOS under-reports it for home-screen apps); glass status strip on top,
+   floating glass dock above the home indicator; pages slide; dock shrinks while you scroll down. */
+:root{--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--hair-d:rgba(247,245,240,.14);
+  --h1:clamp(38px,6.4vw,60px);--h2:clamp(26px,3.6vw,34px);--p:16px;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+  --top-pad:calc(var(--safe-top) + 24px);--bar-gap:max(10px,calc(var(--safe-bot) - 12px));
+  --app-h:100lvh;--glass:rgba(30,30,29,.66);--glass-edge:rgba(247,245,240,.22);--spring:cubic-bezier(.32,1.36,.56,1);--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);overscroll-behavior:none}
+body{color:var(--bg);font:300 var(--p)/1.55 Inter,-apple-system,sans-serif;letter-spacing:-.01em;overflow:hidden}
+b{font-weight:700}.g{color:var(--gold)}
+[hidden]{display:none!important}
+
+/* App shell sized to the true screen */
+#app{position:fixed;top:0;left:0;right:0;height:var(--app-h);overflow:hidden;background:var(--bg)}
+.page{position:absolute;inset:0;background:var(--bg);visibility:hidden;will-change:transform,opacity}
+.page.on{visibility:visible}
+.page iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+.state{position:absolute;inset:0;display:grid;place-items:center;padding:var(--top-pad) 32px 32px;text-align:center;color:var(--soft);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
 .state b{display:block;color:var(--ink)}
-/* Liquid Glass: blurred, saturated backdrop + tint + specular top edge + soft depth */
-.glass,.roundbtn.glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
-.topfade{position:fixed;inset:0 0 auto 0;height:var(--safe-top);z-index:4;pointer-events:none;background:linear-gradient(rgba(30,30,29,.55),rgba(30,30,29,.35));-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
-.dock{position:fixed;left:0;right:0;bottom:var(--bar-gap);z-index:4;display:flex;justify-content:center;align-items:center;gap:10px;padding:0 16px;pointer-events:none}
-nav{pointer-events:auto;display:flex;gap:2px;padding:5px;border-radius:999px}
-nav button,.roundbtn{all:unset;cursor:pointer;position:relative;width:62px;height:52px;display:grid;place-items:center;border-radius:999px;color:rgba(247,245,240,.72);transition:background .25s,color .25s}
-.roundbtn{pointer-events:auto;width:62px;height:62px}
-nav svg,.roundbtn svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-nav button[aria-current=true]{color:var(--gold);background:rgba(247,245,240,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
-nav button .dot{position:absolute;top:9px;left:calc(50% + 8px);margin:0}
+
+/* Liquid Glass: blurred, saturated backdrop + tint + specular edge + depth */
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
+.topfade{position:absolute;inset:0 0 auto 0;height:var(--safe-top);z-index:4;pointer-events:none;background:linear-gradient(rgba(30,30,29,.5),rgba(30,30,29,.3));-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
+
+/* Dock */
+.dock{position:absolute;left:0;right:0;bottom:var(--bar-gap);z-index:5;display:flex;justify-content:center;align-items:center;gap:10px;padding:0 16px;pointer-events:none;transition:transform .45s var(--spring)}
+nav{pointer-events:auto;position:relative;display:flex;padding:5px;border-radius:999px;touch-action:none;transition:padding .35s var(--ease)}
+nav button,.roundbtn{all:unset;cursor:pointer;position:relative;z-index:1;width:62px;height:52px;display:grid;place-items:center;border-radius:999px;color:rgba(247,245,240,.72);transition:color .3s,width .38s var(--ease),opacity .25s}
+nav button[aria-current=true]{color:var(--gold)}
+nav svg,.roundbtn svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s var(--spring)}
+nav button:active svg,.roundbtn:active svg{transform:scale(.86)}
+nav .dot{position:absolute;top:9px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.lens{position:absolute;z-index:0;top:5px;left:0;width:62px;height:52px;border-radius:999px;background:rgba(247,245,240,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,0,.12),0 2px 10px rgba(0,0,0,.12);pointer-events:none;transform-origin:center}
+nav.drag .lens{background:rgba(247,245,240,.24)}
+.roundbtn{pointer-events:auto;width:62px;height:62px;transition:width .38s var(--ease),height .38s var(--ease),transform .35s var(--spring)}
+.roundbtn.glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
+/* Minimized while scrolling down: only the current tab stays */
+.dock.mini{transform:translateY(6px)}
+.dock.mini nav{padding:3px}
+.dock.mini nav button:not([aria-current=true]){width:0;opacity:0;pointer-events:none}
+.dock.mini nav button[aria-current=true]{width:54px;height:46px}
+.dock.mini .lens{height:46px;top:3px}
+.dock.mini .roundbtn{width:52px;height:52px}
 nav button:focus-visible,.roundbtn:focus-visible,.btn:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;margin-left:6px;vertical-align:middle}
-.today{position:absolute;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;color:var(--ink);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px;padding:var(--top-pad) max(5vw,20px) calc(var(--bar-gap) + 100px)}
+
+/* Today */
+.today{overflow:auto;-webkit-overflow-scrolling:touch;color:var(--ink);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px;padding:var(--top-pad) max(5vw,20px) calc(var(--bar-gap) + 110px)}
 .today .wrap{max-width:1000px;margin:0 auto}
-.today .date{font-weight:700;display:flex;gap:8px}
-.today h1{margin:10px 0 28px;max-width:21ch}
+.date{font-weight:700;display:flex;gap:8px}
+h1{font:800 var(--h1)/1.05 "EB Garamond",Georgia,serif;letter-spacing:0;margin:10px 0 28px;max-width:21ch;text-wrap:balance}
+h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 0 6px}
 .cards{display:grid;gap:14px}
-.card{all:unset;cursor:pointer;display:grid;gap:6px;padding:18px 22px 20px;border-radius:25px;background:var(--ink);color:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08)}
+.card{all:unset;cursor:pointer;display:grid;gap:6px;padding:18px 22px 20px;border-radius:25px;background:var(--ink);color:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08);transition:transform .35s var(--spring)}
+.card:active{transform:scale(.97)}
+.card .top{display:flex;align-items:center;gap:10px}
 .card .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(217,167,46,.14);color:var(--gold);flex:none}
 .card .ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.card .top{display:flex;align-items:center;gap:10px;font-weight:700}
-.card .top .lb{flex:1;color:inherit;font-weight:700}
-.card .top span{color:rgba(247,245,240,.55);font-weight:300;white-space:nowrap}
+.card .lb{flex:1;font-weight:700}
+.card .tm{color:rgba(247,245,240,.55);white-space:nowrap}
 .card .hl{font:800 var(--h2)/1.12 "EB Garamond",Georgia,serif;letter-spacing:0;margin:2px 0;text-wrap:balance}
 .card .kv{color:rgba(247,245,240,.72)}
 .card .kv b{color:var(--gold)}
 .card.empty{background:rgba(30,30,29,.06);color:var(--soft);box-shadow:none;border:1px dashed rgba(30,30,29,.2)}
-.card.empty .top span,.card.empty .kv{color:var(--soft)}
+.card.empty .tm,.card.empty .kv{color:var(--soft)}
+.ndot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-left:6px;vertical-align:middle}
 .today .foot{margin-top:26px;font-weight:700;color:var(--soft);display:flex;justify-content:space-between}
-.today .sdg{color:var(--gold);letter-spacing:.12em}
-.lock,.sheet{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:var(--top-pad) max(5vw,20px) calc(var(--safe-bot) + 24px)}
-.lock{background:var(--ink)}
+.sdg{color:var(--gold);letter-spacing:.12em}
+
+/* Lock + sheet */
+.lock{position:fixed;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:center;padding:var(--top-pad) max(5vw,20px) calc(var(--safe-bot) + 24px);background:var(--ink)}
 .lock .wrap{max-width:460px;width:100%;margin:0 auto}
 .dia{color:var(--gold);font-weight:700}
-h1{font:800 var(--h1)/1.05 "EB Garamond",Georgia,serif;letter-spacing:0;margin:10px 0 14px;text-wrap:balance}
-h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 0 6px}
 .muted{color:rgba(247,245,240,.65);margin:0 0 22px}
 label{display:block;font-weight:700;margin-bottom:8px}
 input{width:100%;font:400 16px Inter,sans-serif;padding:14px 16px;border-radius:14px;border:1px solid var(--hair-d);background:rgba(247,245,240,.06);color:var(--bg)}
-.btn{all:unset;cursor:pointer;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;margin-top:14px}
-.btn.ghost{background:transparent;color:var(--bg);border:1px solid var(--hair-d)}
+.btn{all:unset;cursor:pointer;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;margin-top:14px;transition:transform .3s var(--spring)}
+.btn:active{transform:scale(.95)}
+.btn.ghost{background:rgba(247,245,240,.06);color:var(--bg);border:1px solid var(--hair-d)}
 .err{color:var(--gold);font-weight:700;min-height:1.6em;margin-top:10px}
-.sheet{background:rgba(0,0,0,.28);justify-content:flex-end;padding:0 10px var(--bar-gap)}
-.panel{border-radius:34px;padding:10px 22px 18px;max-height:80vh;overflow:auto;--glass:rgba(30,30,29,.72)}
+.sheet{position:fixed;inset:0;z-index:7;display:flex;flex-direction:column;justify-content:flex-end;padding:0 10px var(--bar-gap);background:rgba(0,0,0,.28);transition:background .3s}
+.sheet.closed{background:rgba(0,0,0,0);pointer-events:none}
+.panel{border-radius:34px;padding:10px 22px 18px;max-height:80vh;overflow:auto;--glass:rgba(30,30,29,.74);transition:transform .45s var(--spring),opacity .25s}
+.sheet.closed .panel{transform:translateY(110%);opacity:.6}
 .grab{width:38px;height:5px;border-radius:3px;background:rgba(247,245,240,.3);margin:0 auto 6px}
 .sec{padding:18px 0;border-bottom:1px solid var(--hair-d)}
 .sec:last-child{border-bottom:0}
 .row{display:flex;flex-wrap:wrap;gap:10px}
 textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;padding:12px;border-radius:14px;border:1px solid var(--hair-d);background:rgba(247,245,240,.06);color:var(--bg);resize:vertical}
-[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 </style>
 </head>
 <body>
-<main id="main">
-  <div class="state" id="state"><div><b>Loading your brief…</b></div></div>
-  <iframe id="frame" title="Brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" hidden></iframe>
-  <section class="today" id="today" hidden><div class="wrap">
-    <div class="date"><span class="g">◆</span><span id="tdate"></span></div>
-    <h1 id="greet"></h1>
-    <div class="cards" id="cards"></div>
-    <div class="foot"><span>Logan's Briefs</span><span class="sdg">S.D.G.</span></div>
-  </div></section>
-</main>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-today" viewBox="0 0 24 24"><path d="M12 3l6.5 9L12 21l-6.5-9z"/></symbol>
   <symbol id="i-daily" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></symbol>
@@ -97,14 +116,30 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
   <symbol id="i-inbox" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.8 7l8.2 6 8.2-6"/></symbol>
   <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></symbol>
 </svg>
-<div class="topfade" aria-hidden="true"></div>
-<div class="dock"><nav id="tabs" class="glass" aria-label="Briefs">
-  <button data-k="today" aria-label="Today"><svg><use href="#i-today"/></svg></button>
-  <button data-k="daily" aria-label="Daily brief"><svg><use href="#i-daily"/></svg><i class="dot" id="d-daily" hidden></i></button>
-  <button data-k="gym" aria-label="Gym brief"><svg><use href="#i-gym"/></svg><i class="dot" id="d-gym" hidden></i></button>
-  <button data-k="inbox" aria-label="Inbox brief"><svg><use href="#i-inbox"/></svg><i class="dot" id="d-inbox" hidden></i></button>
-</nav>
-<button id="more" class="roundbtn glass" aria-label="Settings"><svg><use href="#i-more"/></svg></button></div>
+
+<div id="app">
+  <section class="page today" data-page="today"><div class="wrap">
+    <div class="date"><span class="g">◆</span><span id="tdate"></span></div>
+    <h1 id="greet"></h1>
+    <div class="cards" id="cards"></div>
+    <div class="foot"><span>Logan's Briefs</span><span class="sdg">S.D.G.</span></div>
+  </div></section>
+  <section class="page" data-page="daily"><iframe title="Daily brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe><div class="state"></div></section>
+  <section class="page" data-page="gym"><iframe title="Gym brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe><div class="state"></div></section>
+  <section class="page" data-page="inbox"><iframe title="Inbox brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe><div class="state"></div></section>
+
+  <div class="topfade" aria-hidden="true"></div>
+  <div class="dock" id="dock">
+    <nav id="tabs" class="glass" aria-label="Briefs">
+      <span class="lens" id="lens"></span>
+      <button data-k="today" aria-label="Today"><svg><use href="#i-today"/></svg></button>
+      <button data-k="daily" aria-label="Daily brief"><svg><use href="#i-daily"/></svg><i class="dot" id="d-daily" hidden></i></button>
+      <button data-k="gym" aria-label="Gym brief"><svg><use href="#i-gym"/></svg><i class="dot" id="d-gym" hidden></i></button>
+      <button data-k="inbox" aria-label="Inbox brief"><svg><use href="#i-inbox"/></svg><i class="dot" id="d-inbox" hidden></i></button>
+    </nav>
+    <button id="more" class="roundbtn glass" aria-label="Settings"><svg><use href="#i-more"/></svg></button>
+  </div>
+</div>
 
 <div class="lock" id="lock" hidden><div class="wrap">
   <div class="dia">◆ Logan's Briefs</div>
@@ -118,7 +153,7 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
   </form>
 </div></div>
 
-<div class="sheet" id="sheet" hidden><div class="panel glass" role="dialog" aria-label="Settings"><div class="grab"></div>
+<div class="sheet closed" id="sheet" aria-hidden="true"><div class="panel glass" role="dialog" aria-label="Settings"><div class="grab"></div>
   <div class="sec">
     <h2>Notifications</h2>
     <p class="muted" id="nstat" style="margin-bottom:0"></p>
@@ -144,17 +179,30 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
 {
 const VAPID = 'BO_3X2huQ2a8WRKiPKwoQJAlZ4L6po2DdYPUs2ChwCf6q2SKjv8mdJFVs1BPgLnE_S2fmSjHB_iFKk20JI7v8Bo';
 const KINDS = ['daily', 'gym', 'inbox'];
+const ORDER = ['today', 'daily', 'gym', 'inbox'];
 const $ = id => document.getElementById(id);
+const page = k => document.querySelector(`.page[data-page="${k}"]`);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch {} },
   del(k) { try { localStorage.removeItem(k); } catch {} }
 };
-let pass = store.get('briefs-pass') || memPass();
-function memPass() { return window.__pass || null; }
-const cache = {}, tpl = {};
+let pass = store.get('briefs-pass');
+const cache = {}, tpl = {}, rendered = {};
 const ub = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 
+// ---- Size the app to the real screen. iOS reports a short viewport for home-screen apps.
+function sizeApp() {
+  const portrait = matchMedia('(orientation: portrait)').matches;
+  const screenH = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
+  const h = isStandalone ? Math.max(innerHeight, screenH) : innerHeight;
+  document.documentElement.style.setProperty('--app-h', h + 'px');
+}
+sizeApp(); addEventListener('resize', () => { sizeApp(); placeLens(false); });
+
+// ---- Data
 async function decrypt(env, pw) {
   const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
   const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: ub(env.salt), iterations: 310000, hash: 'SHA-256' },
@@ -162,141 +210,217 @@ async function decrypt(env, pw) {
   const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub(env.iv) }, key, ub(env.ct));
   return JSON.parse(new TextDecoder().decode(pt));
 }
-async function getEnv(k) {
-  const r = await fetch('data/' + k + '.json?t=' + Date.now(), { cache: 'no-store' });
-  if (!r.ok) throw new Error('missing');
-  return r.json();
-}
-async function getTpl(k) {
-  if (!tpl[k]) { const r = await fetch('templates/' + k + '.html'); tpl[k] = await r.text(); }
-  return tpl[k];
-}
-function when(iso) {
-  const d = new Date(iso); if (isNaN(d)) return '–';
-  const today = new Date().toDateString() === d.toDateString();
-  return today ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-               : d.toLocaleDateString([], { weekday: 'short' });
-}
-// The brief pages run inside a frame that can't see the phone's status bar, so measure it here and pass it in.
-function measure(prop) { const d = document.createElement('div'); d.style.cssText = 'position:fixed;visibility:hidden;padding-top:' + prop; document.body.appendChild(d); const v = parseFloat(getComputedStyle(d).paddingTop) || 0; d.remove(); return v; }
-function frameCSS() {
-  const top = measure('var(--safe-top)'), bot = measure('var(--safe-bot)');
-  const gap = Math.max(10, bot - 12);
-  return '<style>header.band{padding-top:' + (top + 24) + 'px!important}footer.band{padding-bottom:' + (gap + 110) + 'px!important}html{-webkit-text-size-adjust:100%}</style>';
-}
-function seen(k, iso) { return store.get('seen-' + k) === iso; }
-function markDots() { KINDS.forEach(k => { const c = cache[k]; $('d-' + k).hidden = !c || seen(k, c.env.updated); }); }
-
+async function getEnv(k) { const r = await fetch('data/' + k + '.json?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw 0; return r.json(); }
+async function getTpl(k) { if (!tpl[k]) tpl[k] = await (await fetch('templates/' + k + '.html')).text(); return tpl[k]; }
 async function loadAll() {
   await Promise.all(KINDS.map(async k => {
-    try {
-      const env = await getEnv(k);
-      if (!cache[k] || cache[k].env.updated !== env.updated) cache[k] = { env };
-    } catch { delete cache[k]; }
+    try { const env = await getEnv(k); if (!cache[k] || cache[k].env.updated !== env.updated) { cache[k] = { env }; rendered[k] = null; } }
+    catch { delete cache[k]; }
   }));
   markDots();
 }
 async function dataFor(k) { const c = cache[k]; return c ? (c.data || (c.data = await decrypt(c.env, pass))) : null; }
-
+function when(iso) {
+  const d = new Date(iso); if (isNaN(d)) return '–';
+  return new Date().toDateString() === d.toDateString() ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString([], { weekday: 'short' });
+}
+const seen = (k, iso) => store.get('seen-' + k) === iso;
+function markDots() { KINDS.forEach(k => { const c = cache[k]; $('d-' + k).hidden = !c || seen(k, c.env.updated); }); }
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const LABEL = { daily: 'Daily Brief', gym: 'Gym Brief', inbox: 'Inbox Brief' };
-const EMPTY = { daily: 'Arrives each morning around 6.', gym: 'Arrives each afternoon around 5.', inbox: 'Arrives each evening around 7.' };
-function keyLine(k, d) {
-  if (k === 'daily') { const w = d.weather || {}; const n = (d.cal || []).length;
-    return `<b>${esc(w.hi)}°</b> / ${esc(w.lo)}° · Rain ${esc(w.rain)}%` + (n ? ` · ${n} on the calendar` : ''); }
-  if (k === 'gym') { if (d.rest) return '<b>Rest day</b> · No workout on the calendar';
-    return [`<b>${esc(d.session)}</b>`, esc(d.time), (d.plan || []).length ? (d.plan.length + ' exercises') : ''].filter(Boolean).join(' · '); }
-  const a = d.action || {}, f = d.folders || [];
-  const total = f.reduce((s, x) => s + (x.items || []).length, 0);
-  return (a.urgent ? `<b>${esc(a.text)}</b>` : 'Nothing urgent') + ` · ${total} filed` + ((d.inbox || []).length ? ` · ${d.inbox.length} left` : '');
-}
-function trimAccent(d) { const h = String(d.headline || ''), a = String(d.accent || ''); const t = a && h.startsWith(a) ? h.slice(a.length).trim() : h; return t || h; }
-function greeting() { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
 
-async function showToday() {
-  $('frame').hidden = true; $('state').hidden = true; $('today').hidden = false;
-  $('tdate').textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).replace(',', ' ·');
-  $('greet').innerHTML = esc(greeting()) + ', <span class="g">Logan.</span>';
-  const order = new Date().getHours() >= 17 ? ['inbox', 'gym', 'daily'] : new Date().getHours() >= 12 ? ['gym', 'daily', 'inbox'] : ['daily', 'gym', 'inbox'];
-  const html = await Promise.all(order.map(async k => {
-    const c = cache[k];
-    if (!c) return `<button class="card empty" data-go="${k}"><div class="top"><span class="ic"><svg><use href="#i-${k}"/></svg></span><span class="lb">${LABEL[k]}</span><span>Not yet</span></div><div class="kv">${EMPTY[k]}</div></button>`;
-    let d; try { d = await dataFor(k); } catch { d = null; }
-    const isNew = !seen(k, c.env.updated);
-    return `<button class="card" data-go="${k}">` +
-      `<div class="top"><span class="ic"><svg><use href="#i-${k}"/></svg></span><span class="lb">${LABEL[k]}${isNew ? '<i class="dot" aria-label="new"></i>' : ''}</span><span>${esc(when(c.env.updated))}</span></div>` +
-      (d ? `<div class="hl">${esc(trimAccent(d))}</div><div class="kv">${keyLine(k, d)}</div>` : '<div class="kv">Couldn’t unlock this brief.</div>') + '</button>';
-  }));
-  $('cards').innerHTML = html.join('');
+// ---- Brief pages: each brief keeps its own frame, so switching never reloads it.
+function measure(prop) { const d = document.createElement('div'); d.style.cssText = 'position:fixed;visibility:hidden;padding-top:' + prop; document.body.appendChild(d); const v = parseFloat(getComputedStyle(d).paddingTop) || 0; d.remove(); return v; }
+function frameExtras() {
+  const top = measure('var(--safe-top)'), gap = measure('var(--bar-gap)');
+  return '<style>header.band{padding-top:' + (top + 24) + 'px!important}footer.band{padding-bottom:' + (gap + 110) + 'px!important}html{-webkit-text-size-adjust:100%}</style>' +
+    '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a){a.target="_blank";a.rel="noopener"}},true);' +
+    'var ly=0,t=0;addEventListener("scroll",function(){var y=scrollY;if(Math.abs(y-ly)>6){parent.postMessage({briefScroll:y,down:y>ly},"*");ly=y}},{passive:true});<\/script>';
 }
-$('cards').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) location.hash = b.dataset.go; });
-
-async function show(k) {
-  if (k !== 'today' && !KINDS.includes(k)) k = 'today';
-  document.querySelectorAll('nav button[data-k]').forEach(b => b.setAttribute('aria-current', b.dataset.k === k));
-  if (k === 'today') return showToday();
-  $('today').hidden = true;
-  const frame = $('frame'), st = $('state');
+async function renderBrief(k) {
+  const pg = page(k), frame = pg.querySelector('iframe'), st = pg.querySelector('.state');
   const c = cache[k];
   if (!c) { frame.hidden = true; st.hidden = false; st.innerHTML = '<div><b>No brief yet.</b>It shows up here after its next scheduled run.</div>'; return; }
+  if (rendered[k] === c.env.updated) return;
   try {
     const data = await dataFor(k);
-    const html = (await getTpl(k)).replace('<!--BRIEF-DATA-->', frameCSS() +
-      '<script type="application/json" id="brief">' + JSON.stringify(data).replace(/</g, '\\u003c') + '<\/script>' +
-      '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a){a.target="_blank";a.rel="noopener"}},true)<\/script>');
-    frame.srcdoc = html; frame.hidden = false; st.hidden = true;
-    store.set('seen-' + k, c.env.updated);
-    markDots();
-  } catch (err) {
+    frame.srcdoc = (await getTpl(k)).replace('<!--BRIEF-DATA-->', frameExtras() +
+      '<script type="application/json" id="brief">' + JSON.stringify(data).replace(/</g, '\\u003c') + '<\/script>');
+    frame.hidden = false; st.hidden = true; rendered[k] = c.env.updated;
+  } catch {
     frame.hidden = true; st.hidden = false;
     st.innerHTML = '<div><b>Couldn’t unlock this brief.</b>The passphrase may have changed. Open More → Forget passphrase.</div>';
   }
 }
-const route = () => show((location.hash || '#today').slice(1));
 
+// ---- Today
+const LABEL = { daily: 'Daily Brief', gym: 'Gym Brief', inbox: 'Inbox Brief' };
+const EMPTY = { daily: 'Arrives each morning around 6.', gym: 'Arrives each afternoon around 5.', inbox: 'Arrives each evening around 7.' };
+function keyLine(k, d) {
+  if (k === 'daily') { const w = d.weather || {}, n = (d.cal || []).length; return `<b>${esc(w.hi)}°</b> / ${esc(w.lo)}° · Rain ${esc(w.rain)}%` + (n ? ` · ${n} on the calendar` : ''); }
+  if (k === 'gym') { if (d.rest) return '<b>Rest day</b> · No workout on the calendar'; return [`<b>${esc(d.session)}</b>`, esc(d.time), (d.plan || []).length ? d.plan.length + ' exercises' : ''].filter(Boolean).join(' · '); }
+  const a = d.action || {}, total = (d.folders || []).reduce((s, x) => s + (x.items || []).length, 0);
+  return (a.urgent ? `<b>${esc(a.text)}</b>` : 'Nothing urgent') + ` · ${total} filed` + ((d.inbox || []).length ? ` · ${d.inbox.length} left` : '');
+}
+function trimAccent(d) { const h = String(d.headline || ''), a = String(d.accent || ''); const t = a && h.startsWith(a) ? h.slice(a.length).trim() : h; return t || h; }
+async function renderToday() {
+  const hr = new Date().getHours();
+  $('tdate').textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).replace(',', ' ·');
+  $('greet').innerHTML = (hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening') + ', <span class="g">Logan.</span>';
+  const order = hr >= 17 ? ['inbox', 'gym', 'daily'] : hr >= 12 ? ['gym', 'daily', 'inbox'] : ['daily', 'gym', 'inbox'];
+  const html = await Promise.all(order.map(async k => {
+    const c = cache[k], ic = `<span class="ic"><svg><use href="#i-${k}"/></svg></span>`;
+    if (!c) return `<button class="card empty" data-go="${k}"><div class="top">${ic}<span class="lb">${LABEL[k]}</span><span class="tm">Not yet</span></div><div class="kv">${EMPTY[k]}</div></button>`;
+    let d; try { d = await dataFor(k); } catch { d = null; }
+    return `<button class="card" data-go="${k}"><div class="top">${ic}<span class="lb">${LABEL[k]}${seen(k, c.env.updated) ? '' : '<i class="ndot" aria-label="new"></i>'}</span><span class="tm">${esc(when(c.env.updated))}</span></div>` +
+      (d ? `<div class="hl">${esc(trimAccent(d))}</div><div class="kv">${keyLine(k, d)}</div>` : '<div class="kv">Couldn’t unlock this brief.</div>') + '</button>';
+  }));
+  $('cards').innerHTML = html.join('');
+}
+$('cards').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+
+// ---- Liquid Glass lens: one bubble that glides and stretches between tabs, and follows your finger.
+const nav = $('tabs'), lens = $('lens');
+const btn = k => nav.querySelector(`button[data-k="${k}"]`);
+let current = null, lensX = 0;
+function targetX(k) { const b = btn(k); return b ? b.offsetLeft : 0; }
+function setLens(x, w) { lensX = x; lens.style.transform = `translateX(${x}px)`; if (w) lens.style.width = w + 'px'; }
+function placeLens(animate) {
+  const b = btn(current); if (!b) return;
+  const to = b.offsetLeft, from = lensX;
+  if (!animate || reduce || Math.abs(to - from) < 2) { setLens(to, b.offsetWidth); return; }
+  const mid = (from + to) / 2, stretch = 1 + Math.min(0.28, Math.abs(to - from) / 400);
+  lens.animate([
+    { transform: `translateX(${from}px) scale(1,1)` },
+    { transform: `translateX(${mid}px) scale(${stretch},${2 - stretch})`, offset: 0.45 },
+    { transform: `translateX(${to}px) scale(1,1)` }
+  ], { duration: 520, easing: 'cubic-bezier(.32,1.25,.56,1)' });
+  setLens(to, b.offsetWidth);
+}
+// Drag across the bar: the lens follows, the tab under it is chosen on release.
+let dragging = false, startX = 0, moved = false;
+nav.addEventListener('pointerdown', e => {
+  if (dock.classList.contains('mini')) return;
+  dragging = true; moved = false; startX = e.clientX; nav.setPointerCapture(e.pointerId);
+});
+nav.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  if (Math.abs(e.clientX - startX) > 8) { moved = true; nav.classList.add('drag'); }
+  if (!moved) return;
+  const r = nav.getBoundingClientRect(), w = lens.offsetWidth;
+  const x = Math.max(5, Math.min(r.width - w - 5, e.clientX - r.left - w / 2));
+  setLens(x);
+});
+nav.addEventListener('pointerup', e => {
+  if (!dragging) return; dragging = false; nav.classList.remove('drag');
+  const r = nav.getBoundingClientRect(), x = e.clientX - r.left;
+  let pick = null;
+  if (moved) { let best = 1e9; ORDER.forEach(k => { const b = btn(k), c = b.offsetLeft + b.offsetWidth / 2, d = Math.abs(c - x); if (d < best) { best = d; pick = k; } }); }
+  else { const el = document.elementFromPoint(e.clientX, e.clientY), b = el && el.closest('button[data-k]'); pick = b && b.dataset.k; }
+  if (pick) go(pick); else placeLens(true);
+});
+nav.addEventListener('click', e => { if (e.detail === 0) { const b = e.target.closest('button[data-k]'); if (b) go(b.dataset.k); } }); // keyboard
+nav.addEventListener('pointercancel', () => { dragging = false; nav.classList.remove('drag'); placeLens(true); });
+
+// ---- Minimize the dock while scrolling down, bring it back on scroll up or tap.
+const dock = $('dock');
+let miniTimer = 0;
+function setMini(on) {
+  if (dock.classList.contains('mini') === on) return;
+  dock.classList.toggle('mini', on);
+  // Keep the lens glued to the active tab while the bar resizes.
+  const t0 = performance.now(); cancelAnimationFrame(miniTimer);
+  const follow = () => { const b = btn(current); if (b) { lens.style.transition = 'none'; setLens(b.offsetLeft, b.offsetWidth); } if (performance.now() - t0 < 450) miniTimer = requestAnimationFrame(follow); };
+  follow();
+}
+function onScroll(y, down) { if (y < 40) setMini(false); else setMini(down); }
+dock.addEventListener('click', e => { if (dock.classList.contains('mini')) { e.stopPropagation(); setMini(false); } }, true);
+addEventListener('message', e => {
+  if (!e.data || typeof e.data.briefScroll !== 'number' || current === 'today') return;
+  const f = page(current).querySelector('iframe'); if (f && e.source === f.contentWindow) onScroll(e.data.briefScroll, e.data.down);
+});
+let lastTodayY = 0;
+page('today').addEventListener('scroll', e => { const y = e.target.scrollTop; if (Math.abs(y - lastTodayY) > 6) { onScroll(y, y > lastTodayY); lastTodayY = y; } }, { passive: true });
+
+// ---- Page switching with a slide, direction follows tab order.
+let busy = null;
+async function go(k, opts = {}) {
+  if (!ORDER.includes(k)) k = 'today';
+  if (location.hash !== '#' + k) history.replaceState(null, '', '#' + k);
+  const prev = current; current = k;
+  ORDER.forEach(x => btn(x).setAttribute('aria-current', x === k));
+  setMini(false); placeLens(!!prev && !opts.instant);
+  if (k === 'today') await renderToday(); else await renderBrief(k);
+  if (k !== 'today' && cache[k]) { store.set('seen-' + k, cache[k].env.updated); markDots(); }
+  const incoming = page(k);
+  if (!prev || prev === k || opts.instant || reduce) {
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p === incoming));
+    return;
+  }
+  const outgoing = page(prev), dir = ORDER.indexOf(k) > ORDER.indexOf(prev) ? 1 : -1;
+  if (busy) busy.forEach(a => a.finish());
+  incoming.classList.add('on'); incoming.style.zIndex = 2; outgoing.style.zIndex = 1;
+  const opt = { duration: 420, easing: 'cubic-bezier(.2,.85,.2,1)' };
+  busy = [
+    incoming.animate([{ transform: `translateX(${dir * 28}%)`, opacity: 0 }, { transform: 'translateX(0)', opacity: 1 }], opt),
+    outgoing.animate([{ transform: 'translateX(0) scale(1)', opacity: 1 }, { transform: `translateX(${-dir * 12}%) scale(.97)`, opacity: 0 }], opt)
+  ];
+  await busy[0].finished.catch(() => {});
+  if (current === k) { outgoing.classList.remove('on'); outgoing.style.zIndex = ''; incoming.style.zIndex = ''; }
+  busy = null;
+}
+addEventListener('hashchange', () => go(location.hash.slice(1)));
+
+// ---- Start, unlock
 async function start() {
   if (!pass) { $('lock').hidden = false; $('pass').focus(); return; }
   $('lock').hidden = true;
-  await loadAll(); route();
+  await loadAll();
+  go((location.hash || '#today').slice(1), { instant: true });
+  KINDS.forEach(k => renderBrief(k)); // warm the other pages so switching is instant
 }
-
 $('unlock').addEventListener('submit', async ev => {
   ev.preventDefault();
   const pw = $('pass').value.trim(); $('perr').textContent = '';
   try {
-    const any = KINDS.find(k => cache[k]) || (await loadAll(), KINDS.find(k => cache[k]));
+    if (!KINDS.some(k => cache[k])) await loadAll();
+    const any = KINDS.find(k => cache[k]);
     if (any) await decrypt(cache[any].env, pw);
-    pass = pw; window.__pass = pw; store.set('briefs-pass', pw);
-    $('pass').value = ''; start();
+    pass = pw; store.set('briefs-pass', pw); $('pass').value = ''; start();
   } catch { $('perr').textContent = 'That passphrase didn’t work. Check it and try again.'; }
 });
-
-document.querySelectorAll('nav button[data-k]').forEach(b => b.addEventListener('click', () => {
-  if (location.hash === '#' + b.dataset.k) show(b.dataset.k); else location.hash = b.dataset.k;
-}));
-addEventListener('hashchange', route);
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState !== 'visible' || !pass) return;
-  const k = (location.hash || '#today').slice(1); const before = cache[k] && cache[k].env.updated;
   await loadAll();
-  if (k === 'today' || (cache[k] && cache[k].env.updated !== before)) show(k);
+  if (current === 'today') renderToday(); else renderBrief(current);
+  KINDS.forEach(k => k !== current && renderBrief(k));
 });
 
-// Settings sheet
-const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+// ---- More sheet
 function notifStatus() {
   const ok = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   if (!isStandalone) return 'Add this to your Home Screen first (Share → Add to Home Screen), then open it from the icon.';
   if (!ok) return 'This phone’s browser doesn’t support push for web apps. iOS 16.4 or later is needed.';
-  if (Notification.permission === 'granted') return 'On. Tap below to show your push code again. App key ' + VAPID.slice(0, 6) + '.';
+  if (Notification.permission === 'granted') return 'On. App key ' + VAPID.slice(0, 6) + '.';
   if (Notification.permission === 'denied') return 'Blocked. Turn them on in Settings → Notifications → Briefs.';
   return 'Off. Tap below and allow notifications.';
 }
-$('more').addEventListener('click', () => { $('nstat').textContent = notifStatus(); $('sheet').hidden = false; });
-$('close').addEventListener('click', () => { $('sheet').hidden = true; });
-$('sheet').addEventListener('click', e => { if (e.target === $('sheet')) $('sheet').hidden = true; });
-$('reload').addEventListener('click', async () => { KINDS.forEach(k => cache[k] && (cache[k].data = null)); await loadAll(); $('sheet').hidden = true; route(); });
-$('forget').addEventListener('click', () => { store.del('briefs-pass'); pass = null; window.__pass = null; $('sheet').hidden = true; start(); });
+function openSheet() {
+  $('nstat').textContent = notifStatus();
+  $('sub').textContent = isStandalone && 'Notification' in window && Notification.permission === 'granted' ? 'Show push code' : 'Turn on notifications';
+  $('sheet').classList.remove('closed'); $('sheet').setAttribute('aria-hidden', 'false');
+}
+function closeSheet() { $('sheet').classList.add('closed'); $('sheet').setAttribute('aria-hidden', 'true'); }
+$('more').addEventListener('click', openSheet);
+$('close').addEventListener('click', closeSheet);
+$('sheet').addEventListener('click', e => { if (e.target === $('sheet')) closeSheet(); });
+// Drag the sheet down to close it.
+{ const panel = document.querySelector('.panel'); let y0 = null;
+  panel.addEventListener('touchstart', e => { if (panel.scrollTop <= 0) y0 = e.touches[0].clientY; }, { passive: true });
+  panel.addEventListener('touchmove', e => { if (y0 === null) return; const dy = Math.max(0, e.touches[0].clientY - y0); panel.style.transition = 'none'; panel.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  panel.addEventListener('touchend', e => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; panel.style.transition = ''; panel.style.transform = ''; if (dy > 90) closeSheet(); });
+}
+$('reload').addEventListener('click', async () => { KINDS.forEach(k => { if (cache[k]) cache[k].data = null; rendered[k] = null; }); await loadAll(); closeSheet(); go(current, { instant: true }); KINDS.forEach(k => renderBrief(k)); });
+$('forget').addEventListener('click', () => { store.del('briefs-pass'); pass = null; closeSheet(); KINDS.forEach(k => { if (cache[k]) cache[k].data = null; rendered[k] = null; }); start(); });
 
 function b64u(s) { const p = '='.repeat((4 - s.length % 4) % 4); return ub((s + p).replace(/-/g, '+').replace(/_/g, '/')); }
 $('sub').addEventListener('click', async () => {
@@ -306,16 +430,13 @@ $('sub').addEventListener('click', async () => {
     if (perm !== 'granted') { $('nstat').textContent = notifStatus(); return; }
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
-    // If this phone signed up with an older key, drop it and sign up again with the current one.
-    if (sub) {
-      const have = sub.options && sub.options.applicationServerKey;
-      const want = b64u(VAPID);
+    if (sub) { // signed up with an older key: drop it and sign up again
+      const have = sub.options && sub.options.applicationServerKey, want = b64u(VAPID);
       const same = have && have.byteLength === want.length && new Uint8Array(have).every((v, i) => v === want[i]);
       if (!same) { await sub.unsubscribe(); sub = null; }
     }
     if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID) });
-    $('subjson').value = JSON.stringify(sub);
-    $('subbox').hidden = false; $('nstat').textContent = notifStatus();
+    $('subjson').value = JSON.stringify(sub); $('subbox').hidden = false; $('nstat').textContent = notifStatus();
   } catch (err) { $('nstat').textContent = 'Couldn’t turn on notifications: ' + (err && err.message || err); }
 });
 $('copy').addEventListener('click', async () => {
@@ -325,8 +446,8 @@ $('copy').addEventListener('click', async () => {
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
-  navigator.serviceWorker.addEventListener('message', e => {
-    if (e.data && e.data.open) { const h = new URL(e.data.open).hash; if (h) location.hash = h; loadAll().then(route); }
+  navigator.serviceWorker.addEventListener('message', async e => {
+    if (e.data && e.data.open) { const h = new URL(e.data.open).hash.slice(1); await loadAll(); go(h || 'today'); }
   });
 }
 start();
