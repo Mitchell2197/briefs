@@ -86,6 +86,40 @@ h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 
 .sdg{color:var(--gold);letter-spacing:.12em}
 
 /* Lock + sheet */
+.dock{transition:transform .45s var(--spring),opacity .3s}
+.topfade.dark{background:linear-gradient(to bottom,var(--ink) 0,var(--ink) var(--safe-top),rgba(30,30,29,.85) calc(var(--safe-top) + 10px),rgba(30,30,29,0) 100%)}
+.dock.away{transform:translateY(140%);opacity:0;pointer-events:none}
+.homebtn{all:unset;position:absolute;left:50%;bottom:var(--bar-gap);z-index:5;box-sizing:border-box;display:flex;align-items:center;gap:10px;height:56px;padding:0 24px 0 18px;border-radius:999px;cursor:pointer;color:var(--bg);font:700 var(--p)/1 Inter,sans-serif;
+  background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12);
+  transform:translate(-50%,140%);opacity:0;pointer-events:none;transition:transform .45s var(--spring),opacity .3s}
+.homebtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.homebtn i{font-style:normal;color:var(--gold)}
+.homebtn.on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.homebtn:active{transform:translate(-50%,0) scale(.95)}
+/* Hidden verse page: same structure as the portfolio's Soli Deo Gloria page */
+.page.verse{color:var(--ink);background:var(--ink)}
+.verse .band{padding:var(--top-pad) max(5vw,20px) 40px}
+.verse .hero{background:var(--ink) radial-gradient(rgba(247,245,240,.14) 1px,transparent 1.2px) 0 0/26px 26px;color:var(--bg);padding-bottom:36px}
+.verse .hero .date{color:var(--bg)}
+.verse .hero h1{margin:10px 0 8px}
+.verse .hero .sub{color:rgba(247,245,240,.55);margin:0}
+.verse .cross{display:block;margin:22px auto 4px;width:182px;height:260px;overflow:visible}
+.verse .cross .beat{transform-origin:91px 78px;animation:beat 1s ease-out infinite}
+.verse .cross .halo{transform-origin:91px 110px;animation:halo 1s ease-out infinite}
+@keyframes beat{0%{transform:scale(1)}8%{transform:scale(1.07)}22%{transform:scale(1)}30%{transform:scale(1.045)}50%,100%{transform:scale(1)}}
+@keyframes halo{0%{opacity:.08}8%{opacity:.28}22%{opacity:.1}30%{opacity:.2}60%,100%{opacity:.06}}
+.verse .light{background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px;padding-top:44px;padding-bottom:28px}
+.verse .wrap{max-width:640px;margin:0 auto}
+.verse h2{margin:0 0 10px}
+.verse .sec{padding:0 0 30px;border:0}
+.verse p{margin:0;color:#3d3c39}
+.verse blockquote{margin:0 0 30px;padding:4px 0 4px 20px;border-left:3px solid var(--gold)}
+.verse blockquote p{font:800 var(--h2)/1.25 "EB Garamond",Georgia,serif;color:var(--ink);letter-spacing:0;text-wrap:pretty}
+.verse blockquote cite{display:block;margin-top:12px;font:700 var(--p)/1 Inter,sans-serif;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.verse .foot{background:var(--ink) radial-gradient(rgba(247,245,240,.08) 1px,transparent 1.2px) 0 0/26px 26px;color:var(--bg);padding:40px max(5vw,20px) calc(var(--bar-gap) + 100px)}
+.verse .foot p{color:rgba(247,245,240,.55);margin-top:8px}
+.verse .foot .sdg{display:block;margin-top:26px;font-weight:700}
+@media (prefers-reduced-motion:reduce){.verse .cross .beat,.verse .cross .halo{animation:none}}
 .lock{position:fixed;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:center;padding:var(--top-pad) max(5vw,20px) calc(var(--safe-bot) + 24px);background:var(--ink)}
 .lock .wrap{max-width:460px;width:100%;margin:0 auto}
 .dia{color:var(--gold);font-weight:700}
@@ -127,6 +161,35 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
   <section class="page" data-page="gym"><iframe title="Gym brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe><div class="state"></div></section>
   <section class="page" data-page="inbox"><iframe title="Inbox brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe><div class="state"></div></section>
 
+  <section class="page verse" data-page="verse" data-bottom="rgb(30, 30, 29)" aria-label="Verse of the day">
+    <header class="band hero"><div class="wrap">
+      <div class="date"><span class="g">◆</span><span id="vdate"></span></div>
+      <h1>Verse of the <span class="g">day.</span></h1>
+      <p class="sub">To God alone be the glory.</p>
+      <svg class="cross" viewBox="0 0 182 260" aria-hidden="true">
+        <defs><radialGradient id="vh"><stop offset="0" stop-color="#D9A72E"/><stop offset="1" stop-color="#D9A72E" stop-opacity="0"/></radialGradient></defs>
+        <circle class="halo" cx="91" cy="110" r="110" fill="url(#vh)"/>
+        <g class="beat" stroke="#D9A72E" stroke-width="2.5" stroke-linecap="round" fill="#D9A72E">
+          <line x1="91" y1="0" x2="91" y2="260"/><line x1="13" y1="78" x2="169" y2="78"/>
+          <circle cx="91" cy="0" r="3.5"/><circle cx="91" cy="26" r="3.5"/><circle cx="91" cy="52" r="3.5"/><circle cx="91" cy="78" r="4.5"/><circle cx="91" cy="104" r="3.5"/><circle cx="91" cy="130" r="3.5"/><circle cx="91" cy="156" r="3.5"/><circle cx="91" cy="182" r="3.5"/><circle cx="91" cy="208" r="3.5"/><circle cx="91" cy="234" r="3.5"/><circle cx="91" cy="260" r="3.5"/>
+          <circle cx="13" cy="78" r="3.5"/><circle cx="39" cy="78" r="3.5"/><circle cx="65" cy="78" r="3.5"/><circle cx="117" cy="78" r="3.5"/><circle cx="143" cy="78" r="3.5"/><circle cx="169" cy="78" r="3.5"/>
+        </g>
+      </svg>
+    </div></header>
+    <section class="band light"><div class="wrap">
+      <div class="sec"><h2>You <span class="g">found it.</span></h2><p>Seven taps. In Scripture, seven is the number of completion. On the seventh day God finished His work, rested, and called it very good (Genesis 2:2–3). It seemed like the right number to hide this behind.</p></div>
+      <blockquote><p id="vtext"></p><cite id="vref"></cite></blockquote>
+      <div class="sec"><h2>What it means</h2><p id="vmean"></p></div>
+      <div class="sec"><h2>In context</h2><p id="vctx"></p></div>
+      <div class="sec"><h2>For today</h2><p id="vtoday"></p></div>
+    </div></section>
+    <footer class="foot"><div class="wrap">
+      <h2 style="margin:0">Soli Deo <span class="g">Gloria.</span></h2>
+      <p>A new verse each day. King James Version.</p>
+      <span class="sdg">S.D.G.</span>
+    </div></footer>
+  </section>
+  <button class="homebtn" id="homebtn" aria-label="Back to home"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Home <i>◆</i></button>
   <div class="topfade" aria-hidden="true"></div>
   <div class="dock" id="dock">
     <nav id="tabs" class="glass" aria-label="Briefs">
@@ -280,6 +343,48 @@ async function renderToday() {
   $('summary').innerHTML = `<p class="say">${say}</p>` + (meta ? `<div class="meta">${meta}</div>` : '');
   WX.build(dl && dl.weather ? dl.weather.sky : null);
 }
+// ---- Hidden verse of the day (King James Version, public domain). Rotates by date.
+const VERSES = [
+ ['Genesis 1:1', 'In the beginning God created the heaven and the earth.', 'The Bible opens by naming God as the Creator of everything that exists. Before anything else is said about people, sin or history, it establishes that the universe had a beginning and a Maker.', 'Genesis 1 is written as an ordered account: light, sky, land, life, and finally humanity, each called good. It answers who made the world and why, rather than giving a lab report of how.', 'Everything you work with today, from materials to time itself, was made by Someone. Build with that kind of order and care.'],
+ ['Psalm 19:1', 'The heavens declare the glory of God; and the firmament sheweth his handywork.', 'Creation itself speaks. The sky, with its scale, beauty and order, points past itself to the One who made it.', 'David wrote this psalm in two halves: God revealed in nature (verses 1–6) and God revealed in His law (verses 7–14). Both, he says, are trustworthy witnesses.', 'Look up at some point today. The order that makes science possible is itself a clue to the Designer.'],
+ ['Proverbs 3:5–6', 'Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.', 'Trust means putting your full weight on God instead of on your own read of the situation. It isn’t anti-thinking; it’s refusing to make your own judgment the final authority.', 'Proverbs is a father’s instruction to his son about living wisely. This passage sits in a section about the rewards of wisdom: long life, peace, and straight paths.', 'Before the next decision you face, ask God for direction first, not as a last resort.'],
+ ['Isaiah 40:31', 'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.', 'Waiting on God isn’t passive. It’s active dependence, and it produces strength people can’t manufacture on their own.', 'Isaiah wrote to Israel in exile, worn out and feeling forgotten. The chapter reminds them that the God who names every star does not grow tired.', 'If today feels heavy, borrow strength. Pause, pray, and then take the next step.'],
+ ['Micah 6:8', 'He hath shewed thee, O man, what is good; and what doth the LORD require of thee, but to do justly, and to love mercy, and to walk humbly with thy God?', 'God’s expectations aren’t hidden or complicated: act fairly, love kindness, and stay humble before Him.', 'Israel asked what sacrifice would satisfy God, offering rams, oil, even their children. Micah answers that God wants a changed life, not a bigger offering.', 'Pick one interaction today and make it just, kind and humble on purpose.'],
+ ['Matthew 6:33', 'But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.', 'Priorities shape everything. Put God’s rule and His way of living first, and He takes responsibility for the rest.', 'Jesus said this in the Sermon on the Mount, right after telling His listeners not to worry about food or clothing. Worry, He says, is what people do when they forget they have a Father.', 'Start the day by giving God the first slot on your list, before email and before work.'],
+ ['John 1:1', 'In the beginning was the Word, and the Word was with God, and the Word was God.', 'John echoes Genesis to say that Jesus, the Word, existed before creation and is Himself God.', '“Word” (Logos) was a term Greek thinkers used for the reason and order behind the universe. John takes it and says that order is a Person, and He came near.', 'The logic that holds the world together has a name and a face. You can know Him.'],
+ ['Romans 8:28', 'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.', 'This isn’t a promise that everything is good. It’s a promise that God works through everything, the bad included, toward good for His people.', 'Paul wrote this in a chapter about suffering, groaning and hope. The “good” in view is being shaped into the likeness of Christ.', 'Whatever didn’t go your way recently, it isn’t wasted. Ask what God might be building through it.'],
+ ['Colossians 3:23', 'And whatsoever ye do, do it heartily, as to the Lord, and not unto men;', 'Every task, even ordinary work, can be done as worship. The real audience is God, not a boss or a client.', 'Paul wrote this to servants in Colossae, people with little status. He told them their work mattered because of who they were ultimately serving.', 'Do today’s work as if God is the client. He is.'],
+ ['Philippians 4:6–7', 'Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God. And the peace of God, which passeth all understanding, shall keep your hearts and minds through Christ Jesus.', 'Turn anxieties into prayers, with thanks mixed in. The result is a peace that guards your mind like a sentry.', 'Paul wrote this from prison, facing possible execution. His calm wasn’t the absence of trouble but the presence of God.', 'Name one worry out loud to God today, and thank Him for one thing alongside it.'],
+ ['Psalm 46:10', 'Be still, and know that I am God: I will be exalted among the heathen, I will be exalted in the earth.', '“Be still” means stop striving. God is in control, and He will be honored whether or not we manage everything.', 'Psalm 46 pictures mountains falling into the sea and nations in uproar, and still God is a refuge. The stillness comes in the middle of chaos, not after it.', 'Take five quiet minutes with no phone. Let God be God.'],
+ ['Ecclesiastes 3:1', 'To every thing there is a season, and a time to every purpose under the heaven:', 'Life moves in seasons: planting and harvesting, mourning and dancing. God is sovereign over the timing.', 'The Teacher in Ecclesiastes wrestles with how fleeting life is. This poem reminds readers that the rhythms of life are under God’s hand, not random.', 'Ask what season you’re in right now, and what faithfulness looks like in it.'],
+ ['Joshua 1:9', 'Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.', 'Courage is commanded, and it’s grounded in God’s presence, not in confidence in yourself.', 'Moses had just died, and Joshua was about to lead Israel into a land full of fortified cities. God repeats “be strong and courageous” three times in this chapter.', 'Face the thing you’ve been avoiding today. You won’t face it alone.'],
+ ['Romans 1:20', 'For the invisible things of him from the creation of the world are clearly seen, being understood by the things that are made, even his eternal power and Godhead; so that they are without excuse:', 'Creation reveals real truths about God: His power and His divine nature are visible in what He made.', 'Paul is explaining why everyone is accountable to God. The design and order of the world is evidence anyone can read.', 'The more you study how the world works, the more reasons you find to worship. Notice one today.'],
+ ['Lamentations 3:22–23', 'It is of the LORD\'s mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.', 'God’s mercy doesn’t run out and doesn’t carry yesterday’s failures forward. Each morning it’s fresh.', 'Jeremiah wrote this after Jerusalem was destroyed, in the middle of a book of grief. Hope shows up right at the center of the lament.', 'Whatever yesterday held, today starts with new mercy. Receive it.'],
+ ['2 Timothy 1:7', 'For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind.', 'Fear isn’t from God. He gives power to act, love toward others, and the self-control to think clearly.', 'Paul wrote this from prison to young Timothy, who was apparently timid in leading the church. Paul urges him to fan his gift into flame.', 'Act on one thing today that fear has been holding you back from.'],
+ ['Psalm 118:24', 'This is the day which the LORD hath made; we will rejoice and be glad in it.', 'Today isn’t an accident. God made it, so it’s worth rejoicing in, whatever is on the calendar.', 'This psalm celebrates God’s rescue, and Jesus quoted the verses just before it about Himself as the rejected stone that became the cornerstone.', 'Find one specific thing to be glad about today and say it out loud.'],
+ ['James 1:5', 'If any of you lack wisdom, let him ask of God, that giveth to all men liberally, and upbraideth not; and it shall be given him.', 'God is generous with wisdom and doesn’t scold you for asking. Just ask.', 'James wrote to believers facing trials. In hard situations, wisdom matters more than answers, and God offers it freely.', 'Bring your hardest decision to God in plain words before you decide.'],
+ ['Hebrews 11:3', 'Through faith we understand that the worlds were framed by the word of God, so that things which are seen were not made of things which do appear.', 'The visible universe came from something invisible: the spoken word of God.', 'Hebrews 11 is the “hall of faith,” and it opens with creation. Faith begins with trusting that God made the world and holds it together.', 'Science measures what is seen. Faith trusts the One who made what is seen. Both are acts of honest attention.'],
+ ['1 Corinthians 10:31', 'Whether therefore ye eat, or drink, or whatsoever ye do, do all to the glory of God.', 'No part of life is too ordinary to honor God, not even eating and drinking.', 'Paul was settling a dispute in Corinth about food offered to idols. His answer reaches past the argument: let every choice point back to God.', 'Pick something routine today, like a meal, a workout or an email, and do it deliberately for God’s glory.'],
+ ['Proverbs 27:17', 'Iron sharpeneth iron; so a man sharpeneth the countenance of his friend.', 'Good friends make each other sharper through honest conversation, challenge and encouragement.', 'Proverbs often teaches through everyday images. Two blades grinding together get keener; so do people who speak truth to each other.', 'Reach out to a friend today who makes you better, and return the favor.']
+];
+function renderVerse() {
+  const now = new Date(), start = new Date(now.getFullYear(), 0, 0), day = Math.floor((now - start) / 864e5);
+  const [ref, text, mean, ctxt, today] = VERSES[day % VERSES.length];
+  $('vdate').textContent = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).replace(',', ' ·');
+  $('vtext').textContent = '“' + text.replace(/[:;,]$/, '') + '”';
+  $('vref').textContent = ref + ' · KJV';
+  $('vmean').textContent = mean; $('vctx').textContent = ctxt; $('vtoday').textContent = today;
+}
+$('homebtn').addEventListener('click', () => go('today'));
+// Seven quick taps on the Today grid (not the summary) open the hidden page, like the portfolio's seven clicks.
+{ let taps = 0, lastTap = 0;
+  page('today').addEventListener('pointerup', e => {
+    if (e.target.closest('.summary')) { taps = 0; return; }
+    const now = performance.now(); taps = now - lastTap < 600 ? taps + 1 : 1; lastTap = now;
+    if (taps >= 7) { taps = 0; go('verse'); }
+  }, { passive: true });
+}
+
 // ---- Weather scene under the summary, in the portfolio header's language:
 // line "constellations" whose corners snap to the page's dot grid (dots at 13 + 26n) and hop dot-to-dot on a spring,
 // thin strokes, faint fills, corner dots, hub spokes, lit grid dots, and dashed signal pulses. Gold + forest green only.
@@ -482,17 +587,19 @@ let busy = null;
 function paintEdges() { const c = (page(current) && page(current).dataset.bottom) || ''; document.documentElement.style.background = c; document.body.style.background = c; document.getElementById('app').style.background = c; }
 function settle() { paintEdges(); document.querySelectorAll('.page').forEach(p => { const on = p.dataset.page === current; p.classList.toggle('on', on); p.style.zIndex = ''; p.style.pointerEvents = ''; }); }
 async function go(k, opts = {}) {
-  if (!ORDER.includes(k)) k = 'today';
+  if (!ORDER.includes(k) && k !== 'verse') k = 'today';
   if (location.hash !== '#' + k) history.replaceState(null, '', '#' + k);
   const prev = current; current = k;
   ORDER.forEach(x => btn(x).setAttribute('aria-current', x === k));
+  $('dock').classList.toggle('away', k === 'verse'); document.querySelector('.topfade').classList.toggle('dark', k === 'verse'); $('homebtn').classList.toggle('on', k === 'verse');
+  if (k === 'verse') renderVerse();
   setMini(false); placeLens(!!prev && !opts.instant);
-  if (k === 'today') await renderToday(); else await renderBrief(k);
+  if (k === 'today') await renderToday(); else if (k !== 'verse') await renderBrief(k);
   if (current !== k) return; // another tab was picked meanwhile
   if (k !== 'today' && cache[k]) { store.set('seen-' + k, cache[k].env.updated); markDots(); }
   if (busy) { busy.forEach(a => a.cancel()); busy = null; settle(); }
   if (!prev || prev === k || opts.instant || reduce) { settle(); return; }
-  const incoming = page(k), outgoing = page(prev), dir = ORDER.indexOf(k) > ORDER.indexOf(prev) ? 1 : -1;
+  const incoming = page(k), outgoing = page(prev), dir = (k === 'verse' ? 9 : ORDER.indexOf(k)) > (prev === 'verse' ? 9 : ORDER.indexOf(prev)) ? 1 : -1;
   incoming.classList.add('on'); outgoing.classList.add('on');
   incoming.style.zIndex = 2; outgoing.style.zIndex = 1; outgoing.style.pointerEvents = 'none';
   const opt = { duration: 420, easing: 'cubic-bezier(.2,.85,.2,1)' };
