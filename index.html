@@ -71,6 +71,8 @@ nav button:focus-visible,.roundbtn:focus-visible,.btn:focus-visible,input:focus-
 h1{font:800 var(--h1)/1.05 "EB Garamond",Georgia,serif;letter-spacing:0;margin:10px 0 28px;max-width:21ch;text-wrap:balance}
 h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 0 6px}
 /* One statement summarizing all three briefs. No clamping, so nothing is ever clipped. */
+.wxart{position:absolute;left:0;top:0;width:100%;pointer-events:none;z-index:0;overflow:visible}
+.today .wrap{position:relative;z-index:1}
 .summary{background:var(--ink);color:var(--bg);border-radius:25px;padding:22px 22px 20px;box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08)}
 .summary .say{font:800 var(--h2)/1.22 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0;text-wrap:pretty}
 .summary .say a{color:inherit;text-decoration:none;cursor:pointer}
@@ -116,7 +118,7 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
 </svg>
 
 <div id="app">
-  <section class="page today" data-page="today"><div class="wrap">
+  <section class="page today" data-page="today"><svg class="wxart" id="wxart" aria-hidden="true"></svg><div class="wrap">
     <div class="date"><span class="g">◆</span><span id="tdate"></span></div>
     <h1 id="greet"></h1>
     <div class="summary" id="summary"></div>
@@ -276,7 +278,75 @@ async function renderToday() {
   const meta = ['daily', 'gym', 'inbox'].map(k => { const c = cache[k]; if (!c) return ''; const isNew = !seen(k, c.env.updated);
     return `<a data-go="${k}">${isNew ? '<i class="ndot" aria-label="new"></i>' : ''}<b>${LABEL[k].replace(' Brief', '')}</b>${esc(when(c.env.updated))}</a>`; }).join('');
   $('summary').innerHTML = `<p class="say">${say}</p>` + (meta ? `<div class="meta">${meta}</div>` : '');
+  WX.build(dl && dl.weather ? dl.weather.sky : null);
 }
+// ---- Weather scene under the summary. Every shape sits on the page's 26px dot grid (dots at 13 + 26n).
+const WX = (() => {
+  const NS = 'http://www.w3.org/2000/svg', C = 26, G = n => 13 + C * n;
+  const svg = $('wxart'), INK = '#1E1E1D', GOLD = '#D9A72E', GREEN = '#4C6B3F';
+  let parts = [], raf = 0, sky = null, t0 = performance.now();
+  const el = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
+  const ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+  // a value that steps one grid cell every `every` seconds, gliding over `glide` seconds
+  const stepper = (t, every, glide) => { const n = Math.floor(t / every), f = (t % every) / glide; return n + ease(Math.min(1, f)); };
+  function cloud(parent, cells) { // cells: [[col,row,width],...] in grid units, drawn as dark capsules
+    const g = el('g', {}, parent);
+    cells.forEach(([c, r, w]) => el('rect', { x: c * C, y: r * C + 3, width: w * C, height: C - 6, rx: (C - 6) / 2, fill: INK }, g));
+    return g;
+  }
+  function build(kind) {
+    cancelAnimationFrame(raf); svg.innerHTML = ''; parts = []; sky = kind;
+    const page = svg.parentElement, sum = $('summary');
+    if (!kind || !sum.offsetHeight) return;
+    const pr = page.getBoundingClientRect(), sr = sum.getBoundingClientRect();
+    const top = sr.bottom - pr.top + page.scrollTop + 18, bottom = page.clientHeight - (parseFloat(getComputedStyle(page).paddingBottom) || 100) - 8;
+    const r0 = Math.ceil((top - 13) / C), r1 = Math.floor((bottom - 13) / C), cols = Math.floor((page.clientWidth - 13) / C);
+    const rows = r1 - r0 + 1; if (rows < 4 || cols < 8) return;
+    svg.setAttribute('height', page.scrollHeight); svg.setAttribute('viewBox', `0 0 ${page.clientWidth} ${page.scrollHeight}`);
+    const midC = Math.floor(cols / 2), midR = r0 + Math.floor(rows / 2);
+    const size = Math.max(2, Math.min(4, Math.floor((rows - 1) / 2))); // ray length in cells
+    const hasSun = kind === 'sun' || kind === 'partly';
+    if (hasSun) {
+      const sc = kind === 'partly' ? midC - 2 : midC, scx = G(sc), scy = G(midR);
+      const disc = el('circle', { cx: scx, cy: scy, r: C * 1.15, fill: GOLD });
+      const rays = [];
+      [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dx, dy]) => {
+        for (let d = 2; d <= size + 1; d++) { const x = sc + dx * d, y = midR + dy * d; if (y < r0 || y > r1 || x < 0 || x > cols) continue;
+          rays.push({ e: el('circle', { cx: G(x), cy: G(y), r: 3.2, fill: GOLD }), d }); }
+      });
+      parts.push(t => { const s = 1 + .035 * Math.sin(t * 1.4); disc.setAttribute('transform', `translate(${scx} ${scy}) scale(${s}) translate(${-scx} ${-scy})`);
+        rays.forEach(r => { const w = (Math.sin(t * 2.2 - r.d * 1.1) + 1) / 2; r.e.setAttribute('opacity', (.25 + .75 * w).toFixed(2)); r.e.setAttribute('r', (2.4 + 1.8 * w).toFixed(2)); }); });
+    }
+    const clouds = [];
+    const shape = big => big ? [[1,0,3],[0,1,5]] : [[1,0,2],[0,1,4]];
+    if (kind === 'partly') clouds.push({ row: midR, col: midC - 1, big: true, span: 3, every: 2.4 });
+    if (kind === 'cloud') { clouds.push({ row: midR - 2, col: midC - 5, big: true, span: 6, every: 2 }); clouds.push({ row: midR + 1, col: midC + 1, big: false, span: 5, every: 2.6, dir: -1 }); }
+    if (kind === 'rain' || kind === 'storm' || kind === 'cold') clouds.push({ row: r0 + 1, col: midC - 3, big: true, span: 2, every: 3 }, { row: r0, col: midC + 1, big: false, span: 2, every: 3.4, dir: -1 });
+    clouds.forEach(c => { c.g = cloud(svg, shape(c.big)); });
+    parts.push(t => clouds.forEach(c => { // drift whole cells back and forth across `span`
+      const n = stepper(t + c.col, c.every, .9) % (c.span * 2), off = n < c.span ? n : c.span * 2 - n;
+      c.x = (c.col + (c.dir || 1) * (off - c.span / 2)) * C; c.g.setAttribute('transform', `translate(${c.x} ${c.row * C})`); }));
+    if (kind === 'rain' || kind === 'storm' || kind === 'cold') {
+      const snow = kind === 'cold', top0 = r0 + 3, len = Math.max(2, r1 - top0);
+      const drops = [];
+      for (let c = midC - 4; c <= midC + 4; c++) { if (c < 0 || c > cols) continue;
+        drops.push({ c, ph: ((c * 7) % 5) / 5, e: snow ? el('circle', { r: 3.2, fill: INK, cx: G(c) }) : el('rect', { width: 4, height: 14, rx: 2, fill: GREEN, x: G(c) - 2 }) }); }
+      parts.push(t => drops.forEach(d => { const p = ((t / (snow ? 3.2 : 1.1)) + d.ph) % 1, y = G(top0) + p * len * C, a = p < .15 ? p / .15 : p > .85 ? (1 - p) / .15 : 1;
+        if (snow) d.e.setAttribute('cy', y); else d.e.setAttribute('y', y - 7);
+        d.e.setAttribute('opacity', (a * (snow ? .55 : .8)).toFixed(2)); }));
+    }
+    if (kind === 'storm') {
+      const pts = [[midC, r0 + 3], [midC - 1, r0 + 4], [midC + 1, r0 + 4], [midC, Math.min(r1, r0 + 6)]].map(([c, r]) => G(c) + ',' + G(r)).join(' ');
+      const bolt = el('polyline', { points: pts, fill: 'none', stroke: GOLD, 'stroke-width': 5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', opacity: 0 });
+      parts.push(t => { const p = t % 4.5; bolt.setAttribute('opacity', p < .12 ? 1 : p < .2 ? .2 : p < .3 ? .9 : p < .55 ? Math.max(0, .9 - (p - .3) * 3.6).toFixed(2) : 0); });
+    }
+    frame(); if (!reduce) loop();
+  }
+  function frame() { const t = (performance.now() - t0) / 1000; parts.forEach(f => f(reduce ? 1.2 : t)); }
+  function loop() { cancelAnimationFrame(raf); const tick = () => { if (current === 'today' && document.visibilityState === 'visible') frame(); raf = requestAnimationFrame(tick); }; raf = requestAnimationFrame(tick); }
+  addEventListener('resize', () => { if (sky) build(sky); });
+  return { build };
+})();
 $('summary').addEventListener('click', e => { const t = e.target.closest('[data-go]'); if (t) go(t.dataset.go); });
 
 // ---- Liquid Glass lens: one bubble that glides and stretches between tabs, and follows your finger.
