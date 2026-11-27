@@ -247,7 +247,7 @@ async function renderBrief(k) {
 
 // ---- Today
 const LABEL = { daily: 'Daily Brief', gym: 'Gym Brief', inbox: 'Inbox Brief' };
-const EMPTY = { daily: 'Arrives each morning around 6.', gym: 'Arrives each afternoon around 5.', inbox: 'Arrives each evening around 7.' };
+const EMPTY = { daily: 'Arrives each morning around 7.', gym: 'Arrives each morning around 7.', inbox: 'Arrives each morning around 7.' };
 function keyLine(k, d) {
   if (k === 'daily') { const w = d.weather || {}, n = (d.cal || []).length; return `<b>${esc(w.hi)}°</b> / ${esc(w.lo)}° · Rain ${esc(w.rain)}%` + (n ? ` · ${n} on the calendar` : ''); }
   if (k === 'gym') { if (d.rest) return '<b>Rest day</b> · No workout on the calendar'; return [`<b>${esc(d.session)}</b>`, esc(d.time), (d.plan || []).length ? d.plan.length + ' exercises' : ''].filter(Boolean).join(' · '); }
@@ -259,7 +259,7 @@ async function renderToday() {
   const hr = new Date().getHours();
   $('tdate').textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).replace(',', ' ·');
   $('greet').innerHTML = (hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening') + ', <span class="g">Logan.</span>';
-  const order = hr >= 17 ? ['inbox', 'gym', 'daily'] : hr >= 12 ? ['gym', 'daily', 'inbox'] : ['daily', 'gym', 'inbox'];
+  const order = ['daily', 'gym', 'inbox'];
   const html = await Promise.all(order.map(async k => {
     const c = cache[k], ic = `<span class="ic"><svg><use href="#i-${k}"/></svg></span>`;
     if (!c) return `<button class="card empty" data-go="${k}"><div class="top">${ic}<span class="lb">${LABEL[k]}</span><span class="tm">Not yet</span></div><div class="kv">${EMPTY[k]}</div></button>`;
