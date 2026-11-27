@@ -230,7 +230,8 @@ function frameExtras() {
   const top = measure('var(--safe-top)'), gap = measure('var(--bar-gap)');
   return '<style>html,body{overflow:hidden!important;height:auto!important}header.band{padding-top:' + (top + 24) + 'px!important}footer.band{padding-bottom:' + (gap + 110) + 'px!important}html{-webkit-text-size-adjust:100%}</style>' +
     '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a){a.target="_blank";a.rel="noopener"}},true);' +
-    'function h(){parent.postMessage({briefHeight:Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0)},"*")}' +
+    'function bg(el){while(el){var c=getComputedStyle(el).backgroundColor;if(c&&c!=="transparent"&&!/rgba\\([^)]*,\\s*0\\)/.test(c))return c;el=el.parentElement}return ""}' +
+    'function h(){var b=document.body;parent.postMessage({briefHeight:Math.max(document.documentElement.scrollHeight,b?b.scrollHeight:0),top:bg(document.querySelector("header")||(b&&b.firstElementChild)),bottom:bg(document.querySelector("footer")||(b&&b.lastElementChild))},"*")}' +
     'addEventListener("load",h);if(window.ResizeObserver)new ResizeObserver(h).observe(document.documentElement);if(document.fonts)document.fonts.ready.then(h);setTimeout(h,300);setTimeout(h,1500);<\/script>';
 }
 async function renderBrief(k) {
@@ -344,14 +345,19 @@ addEventListener('message', e => {
   if (!e.data || typeof e.data.briefHeight !== 'number') return;
   for (const k of KINDS) {
     const f = page(k).querySelector('iframe');
-    if (f && e.source === f.contentWindow) { const hgt = Math.max(Math.ceil(e.data.briefHeight), 200); if (Math.abs(parseFloat(f.style.height || 0) - hgt) > 1) f.style.height = hgt + 'px'; }
+    if (f && e.source === f.contentWindow) {
+      const hgt = Math.max(Math.ceil(e.data.briefHeight), 200); if (Math.abs(parseFloat(f.style.height || 0) - hgt) > 1) f.style.height = hgt + 'px';
+      const ok = c => typeof c === 'string' && /^rgba?\([\d.,\s]+\)$/.test(c);
+      if (ok(e.data.top) && ok(e.data.bottom)) { const pg = page(k); pg.style.background = `linear-gradient(to bottom, ${e.data.top} 0 50%, ${e.data.bottom} 50% 100%)`; pg.dataset.bottom = e.data.bottom; if (k === current) paintEdges(); }
+    }
   }
 });
 ORDER.forEach(k => { let last = 0; page(k).addEventListener('scroll', e => { if (k !== current) return; const y = e.target.scrollTop; if (Math.abs(y - last) > 6) { onScroll(y, y > last); last = y; } }, { passive: true }); });
 
 // ---- Page switching with a slide, direction follows tab order.
 let busy = null;
-function settle() { document.querySelectorAll('.page').forEach(p => { const on = p.dataset.page === current; p.classList.toggle('on', on); p.style.zIndex = ''; p.style.pointerEvents = ''; }); }
+function paintEdges() { const c = (page(current) && page(current).dataset.bottom) || ''; document.documentElement.style.background = c; document.body.style.background = c; document.getElementById('app').style.background = c; }
+function settle() { paintEdges(); document.querySelectorAll('.page').forEach(p => { const on = p.dataset.page === current; p.classList.toggle('on', on); p.style.zIndex = ''; p.style.pointerEvents = ''; }); }
 async function go(k, opts = {}) {
   if (!ORDER.includes(k)) k = 'today';
   if (location.hash !== '#' + k) history.replaceState(null, '', '#' + k);
