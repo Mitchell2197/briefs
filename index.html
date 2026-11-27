@@ -203,7 +203,7 @@ function notifStatus() {
   const ok = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   if (!isStandalone) return 'Add this to your Home Screen first (Share → Add to Home Screen), then open it from the icon.';
   if (!ok) return 'This phone’s browser doesn’t support push for web apps. iOS 16.4 or later is needed.';
-  if (Notification.permission === 'granted') return 'On. Tap below to show your push code again.';
+  if (Notification.permission === 'granted') return 'On. Tap below to show your push code again. App key ' + VAPID.slice(0, 6) + '.';
   if (Notification.permission === 'denied') return 'Blocked. Turn them on in Settings → Notifications → Briefs.';
   return 'Off. Tap below and allow notifications.';
 }
@@ -220,8 +220,15 @@ $('sub').addEventListener('click', async () => {
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') { $('nstat').textContent = notifStatus(); return; }
     const reg = await navigator.serviceWorker.ready;
-    const sub = (await reg.pushManager.getSubscription()) ||
-      await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID) });
+    let sub = await reg.pushManager.getSubscription();
+    // If this phone signed up with an older key, drop it and sign up again with the current one.
+    if (sub) {
+      const have = sub.options && sub.options.applicationServerKey;
+      const want = b64u(VAPID);
+      const same = have && have.byteLength === want.length && new Uint8Array(have).every((v, i) => v === want[i]);
+      if (!same) { await sub.unsubscribe(); sub = null; }
+    }
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID) });
     $('subjson').value = JSON.stringify(sub);
     $('subbox').hidden = false; $('nstat').textContent = notifStatus();
   } catch (err) { $('nstat').textContent = 'Couldn’t turn on notifications: ' + (err && err.message || err); }
