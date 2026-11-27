@@ -63,21 +63,25 @@ nav.drag .lens{background:rgba(247,245,240,.24)}
 nav button:focus-visible,.roundbtn:focus-visible,.btn:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 /* Today */
-.today{overflow:auto;-webkit-overflow-scrolling:touch;color:var(--ink);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px;padding:var(--top-pad) max(5vw,20px) calc(var(--bar-gap) + 110px)}
-.today .wrap{max-width:1000px;margin:0 auto}
+/* Today fits one screen: header on top, three cards share the rest, no scrolling */
+.today{overflow:hidden;color:var(--ink);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px;padding:var(--top-pad) max(5vw,20px) calc(var(--bar-gap) + 84px)}
+.today .wrap{max-width:1000px;height:100%;margin:0 auto;display:flex;flex-direction:column}
+.today h1{margin:10px 0 18px;flex:none}
 .date{font-weight:700;display:flex;gap:8px}
 h1{font:800 var(--h1)/1.05 "EB Garamond",Georgia,serif;letter-spacing:0;margin:10px 0 28px;max-width:21ch;text-wrap:balance}
 h2{font:800 var(--h2)/1.1 "EB Garamond",Georgia,serif;letter-spacing:0;margin:0 0 6px}
-.cards{display:grid;gap:14px}
-.card{all:unset;cursor:pointer;display:grid;gap:6px;padding:18px 22px 20px;border-radius:25px;background:var(--ink);color:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08);transition:transform .35s var(--spring)}
+.cards{flex:1;min-height:0;display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:12px}
+.card{all:unset;cursor:pointer;box-sizing:border-box;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:6px;padding:16px 22px;border-radius:25px;background:var(--ink);color:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08);transition:transform .35s var(--spring)}
 .card:active{transform:scale(.97)}
 .card .top{display:flex;align-items:center;gap:10px}
 .card .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(217,167,46,.14);color:var(--gold);flex:none}
 .card .ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .card .lb{flex:1;font-weight:700}
 .card .tm{color:rgba(247,245,240,.55);white-space:nowrap}
-.card .hl{font:800 var(--h2)/1.12 "EB Garamond",Georgia,serif;letter-spacing:0;margin:2px 0;text-wrap:balance}
-.card .kv{color:rgba(247,245,240,.72)}
+.card .hl{font:800 var(--h2)/1.12 "EB Garamond",Georgia,serif;letter-spacing:0;margin:2px 0;text-wrap:balance;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--lines,3);overflow:hidden}
+.card .kv{color:rgba(247,245,240,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.card .hl{flex:none}
+.card .top{flex:none}
 .card .kv b{color:var(--gold)}
 .card.empty{background:rgba(30,30,29,.06);color:var(--soft);box-shadow:none;border:1px dashed rgba(30,30,29,.2)}
 .card.empty .tm,.card.empty .kv{color:var(--soft)}
@@ -122,7 +126,6 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
     <div class="date"><span class="g">◆</span><span id="tdate"></span></div>
     <h1 id="greet"></h1>
     <div class="cards" id="cards"></div>
-    <div class="foot"><span>Logan's Briefs</span><span class="sdg">S.D.G.</span></div>
   </div></section>
   <section class="page" data-page="daily"><iframe title="Daily brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe><div class="state"></div></section>
   <section class="page" data-page="gym"><iframe title="Gym brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"></iframe><div class="state"></div></section>
@@ -269,7 +272,15 @@ async function renderToday() {
       (d ? `<div class="hl">${esc(trimAccent(d))}</div><div class="kv">${keyLine(k, d)}</div>` : '<div class="kv">Couldn’t unlock this brief.</div>') + '</button>';
   }));
   $('cards').innerHTML = html.join('');
+  fitCards();
 }
+function fitCards() {
+  document.querySelectorAll('#cards .card').forEach(c => {
+    const hl = c.querySelector('.hl'); if (!hl) return;
+    for (let n = 3; n >= 1; n--) { hl.style.setProperty('--lines', n); if (c.scrollHeight <= c.clientHeight + 1) break; }
+  });
+}
+addEventListener('resize', () => { if (current === 'today') fitCards(); });
 $('cards').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
 
 // ---- Liquid Glass lens: one bubble that glides and stretches between tabs, and follows your finger.
