@@ -118,7 +118,7 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
 </svg>
 
 <div id="app">
-  <section class="page today" data-page="today"><svg class="wxart" id="wxart" aria-hidden="true"></svg><div class="wrap">
+  <section class="page today" data-page="today"><canvas class="wxart" id="wxart" aria-hidden="true"></canvas><div class="wrap">
     <div class="date"><span class="g">◆</span><span id="tdate"></span></div>
     <h1 id="greet"></h1>
     <div class="summary" id="summary"></div>
@@ -280,70 +280,108 @@ async function renderToday() {
   $('summary').innerHTML = `<p class="say">${say}</p>` + (meta ? `<div class="meta">${meta}</div>` : '');
   WX.build(dl && dl.weather ? dl.weather.sky : null);
 }
-// ---- Weather scene under the summary. Every shape sits on the page's 26px dot grid (dots at 13 + 26n).
+// ---- Weather scene under the summary, in the portfolio header's language:
+// line "constellations" whose corners snap to the page's dot grid (dots at 13 + 26n) and hop dot-to-dot on a spring,
+// thin strokes, faint fills, corner dots, hub spokes, lit grid dots, and dashed signal pulses. Gold + forest green only.
 const WX = (() => {
-  const NS = 'http://www.w3.org/2000/svg', C = 26, G = n => 13 + C * n;
-  const svg = $('wxart'), INK = '#1E1E1D', GOLD = '#D9A72E', GREEN = '#4C6B3F';
-  let parts = [], raf = 0, sky = null, t0 = performance.now();
-  const el = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
-  const ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
-  // a value that steps one grid cell every `every` seconds, gliding over `glide` seconds
-  const stepper = (t, every, glide) => { const n = Math.floor(t / every), f = (t % every) / glide; return n + ease(Math.min(1, f)); };
-  function cloud(parent, cells) { // cells: [[col,row,width],...] in grid units, drawn as dark capsules
-    const g = el('g', {}, parent);
-    cells.forEach(([c, r, w]) => el('rect', { x: c * C, y: r * C + 3, width: w * C, height: C - 6, rx: (C - 6) / 2, fill: INK }, g));
-    return g;
+  const C = 26, G = n => 13 + C * n, GOLD = '#D9A72E', GREEN = '#4C6B3F', INK = '#1E1E1D';
+  const cv = $('wxart'), ctx = cv.getContext('2d');
+  let shapes = [], fx = [], raf = 0, sky = null, region = null, last = 0, time = 0;
+  const snap = (x, y) => [G(Math.round((x - 13) / C)), G(Math.round((y - 13) / C))];
+  function shape(o) { // o: cx, cy (px), rx, ry (cells), n, col, hub, spin, drift (cells), period (s)
+    return Object.assign({ rot: Math.random() * 6.28, x0: o.cx, px: new Float32Array(o.n), py: new Float32Array(o.n), vx: new Float32Array(o.n), vy: new Float32Array(o.n), seeded: false, a: 1 }, o);
   }
+  function dot(x, y, r, col, a) { ctx.globalAlpha = a; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
   function build(kind) {
-    cancelAnimationFrame(raf); svg.innerHTML = ''; parts = []; sky = kind;
-    const page = svg.parentElement, sum = $('summary');
-    if (!kind || !sum.offsetHeight) return;
+    sky = kind; shapes = []; fx = []; cancelAnimationFrame(raf);
+    const page = cv.parentElement, sum = $('summary');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (!kind || !sum.offsetHeight) { cv.style.display = 'none'; return; }
     const pr = page.getBoundingClientRect(), sr = sum.getBoundingClientRect();
-    const top = sr.bottom - pr.top + page.scrollTop + 18, bottom = page.clientHeight - (parseFloat(getComputedStyle(page).paddingBottom) || 100) - 8;
+    const top = sr.bottom - pr.top + page.scrollTop + 22, bottom = page.clientHeight - (parseFloat(getComputedStyle(page).paddingBottom) || 100) - 10;
     const r0 = Math.ceil((top - 13) / C), r1 = Math.floor((bottom - 13) / C), cols = Math.floor((page.clientWidth - 13) / C);
-    const rows = r1 - r0 + 1; if (rows < 4 || cols < 8) return;
-    svg.setAttribute('height', page.scrollHeight); svg.setAttribute('viewBox', `0 0 ${page.clientWidth} ${page.scrollHeight}`);
-    const midC = Math.floor(cols / 2), midR = r0 + Math.floor(rows / 2);
-    const size = Math.max(2, Math.min(4, Math.floor((rows - 1) / 2))); // ray length in cells
-    const hasSun = kind === 'sun' || kind === 'partly';
-    if (hasSun) {
-      const sc = kind === 'partly' ? midC - 2 : midC, scx = G(sc), scy = G(midR);
-      const disc = el('circle', { cx: scx, cy: scy, r: C * 1.15, fill: GOLD });
-      const rays = [];
-      [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dx, dy]) => {
-        for (let d = 2; d <= size + 1; d++) { const x = sc + dx * d, y = midR + dy * d; if (y < r0 || y > r1 || x < 0 || x > cols) continue;
-          rays.push({ e: el('circle', { cx: G(x), cy: G(y), r: 3.2, fill: GOLD }), d }); }
-      });
-      parts.push(t => { const s = 1 + .035 * Math.sin(t * 1.4); disc.setAttribute('transform', `translate(${scx} ${scy}) scale(${s}) translate(${-scx} ${-scy})`);
-        rays.forEach(r => { const w = (Math.sin(t * 2.2 - r.d * 1.1) + 1) / 2; r.e.setAttribute('opacity', (.25 + .75 * w).toFixed(2)); r.e.setAttribute('r', (2.4 + 1.8 * w).toFixed(2)); }); });
-    }
-    const clouds = [];
-    const shape = big => big ? [[1,0,3],[0,1,5]] : [[1,0,2],[0,1,4]];
-    if (kind === 'partly') clouds.push({ row: midR, col: midC - 1, big: true, span: 3, every: 2.4 });
-    if (kind === 'cloud') { clouds.push({ row: midR - 2, col: midC - 5, big: true, span: 6, every: 2 }); clouds.push({ row: midR + 1, col: midC + 1, big: false, span: 5, every: 2.6, dir: -1 }); }
-    if (kind === 'rain' || kind === 'storm' || kind === 'cold') clouds.push({ row: r0 + 1, col: midC - 3, big: true, span: 2, every: 3 }, { row: r0, col: midC + 1, big: false, span: 2, every: 3.4, dir: -1 });
-    clouds.forEach(c => { c.g = cloud(svg, shape(c.big)); });
-    parts.push(t => clouds.forEach(c => { // drift whole cells back and forth across `span`
-      const n = stepper(t + c.col, c.every, .9) % (c.span * 2), off = n < c.span ? n : c.span * 2 - n;
-      c.x = (c.col + (c.dir || 1) * (off - c.span / 2)) * C; c.g.setAttribute('transform', `translate(${c.x} ${c.row * C})`); }));
-    if (kind === 'rain' || kind === 'storm' || kind === 'cold') {
-      const snow = kind === 'cold', top0 = r0 + 3, len = Math.max(2, r1 - top0);
-      const drops = [];
-      for (let c = midC - 4; c <= midC + 4; c++) { if (c < 0 || c > cols) continue;
-        drops.push({ c, ph: ((c * 7) % 5) / 5, e: snow ? el('circle', { r: 3.2, fill: INK, cx: G(c) }) : el('rect', { width: 4, height: 14, rx: 2, fill: GREEN, x: G(c) - 2 }) }); }
-      parts.push(t => drops.forEach(d => { const p = ((t / (snow ? 3.2 : 1.1)) + d.ph) % 1, y = G(top0) + p * len * C, a = p < .15 ? p / .15 : p > .85 ? (1 - p) / .15 : 1;
-        if (snow) d.e.setAttribute('cy', y); else d.e.setAttribute('y', y - 7);
-        d.e.setAttribute('opacity', (a * (snow ? .55 : .8)).toFixed(2)); }));
-    }
-    if (kind === 'storm') {
-      const pts = [[midC, r0 + 3], [midC - 1, r0 + 4], [midC + 1, r0 + 4], [midC, Math.min(r1, r0 + 6)]].map(([c, r]) => G(c) + ',' + G(r)).join(' ');
-      const bolt = el('polyline', { points: pts, fill: 'none', stroke: GOLD, 'stroke-width': 5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', opacity: 0 });
-      parts.push(t => { const p = t % 4.5; bolt.setAttribute('opacity', p < .12 ? 1 : p < .2 ? .2 : p < .3 ? .9 : p < .55 ? Math.max(0, .9 - (p - .3) * 3.6).toFixed(2) : 0); });
-    }
-    frame(); if (!reduce) loop();
+    if (r1 - r0 < 4 || cols < 8) { cv.style.display = 'none'; return; }
+    cv.style.display = '';
+    const dpr = Math.min(2, devicePixelRatio || 1), W = page.clientWidth, H = page.scrollHeight;
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    region = { r0, r1, cols, mid: Math.floor(cols / 2), midR: Math.round((r0 + r1) / 2) };
+    const { mid, midR } = region, R = Math.max(2, Math.min(3, Math.floor((r1 - r0) / 2) - 1));
+    const sun = (c, r) => shapes.push(shape({ cx: G(c), cy: G(r), rx: R, ry: R, n: 8, col: GOLD, hub: true, spin: .16, drift: 0, period: 1, kind: 'sun' }));
+    const cloud = (c, r, w, drift, period, col = GREEN) => shapes.push(shape({ cx: G(c), cy: G(r), rx: w, ry: 1.25, n: 9, col, hub: false, spin: 0, drift, period, kind: 'cloud' }));
+    if (kind === 'sun') sun(mid, midR);
+    if (kind === 'partly') { sun(mid - 2, midR); cloud(mid + 2, midR + 1, 3.2, 1.5, 9); }
+    if (kind === 'cloud') { cloud(mid - 2, midR - 1, 3.4, 2, 10); cloud(mid + 2, midR + 2, 2.6, 2, 13); }
+    if (kind === 'rain' || kind === 'storm' || kind === 'cold') { cloud(mid, r0 + 2, 3.6, 1, 12); }
+    if (kind === 'rain' || kind === 'storm') for (let c = -3; c <= 3; c++) fx.push({ t: 'drop', c: mid + c, ph: ((c + 7) * 0.37) % 1, speed: kind === 'storm' ? 1.1 : 1.4 });
+    if (kind === 'cold') for (let c = -3; c <= 3; c++) fx.push({ t: 'snow', c: mid + c, ph: ((c + 7) * 0.29) % 1, speed: 3.6 });
+    if (kind === 'storm') fx.push({ t: 'bolt', c: mid, every: 4.2 });
+    if (kind === 'sun') fx.push({ t: 'ripple', c: mid, r: midR, every: 3.2 });
+    if (shapes.length > 1) fx.push({ t: 'signal', a: shapes[0], b: shapes[1], every: 5.5 });
+    last = performance.now(); time = 0;
+    if (reduce) { for (let i = 0; i < 90; i++) step(1 / 60); draw(); } else loop();
   }
-  function frame() { const t = (performance.now() - t0) / 1000; parts.forEach(f => f(reduce ? 1.2 : t)); }
-  function loop() { cancelAnimationFrame(raf); const tick = () => { if (current === 'today' && document.visibilityState === 'visible') frame(); raf = requestAnimationFrame(tick); }; raf = requestAnimationFrame(tick); }
+  function step(dt) {
+    time += dt; const f = Math.min(3, dt * 60), SK = .2, SD = .42;
+    for (const o of shapes) {
+      o.rot += o.spin * dt;
+      const off = o.drift ? Math.sin(time * 6.2832 / o.period) * o.drift * C : 0, cx = o.x0 + off;
+      o.curX = cx;
+      for (let k = 0; k < o.n; k++) {
+        const ang = o.rot + (k / o.n) * 6.2832, t = snap(cx + Math.cos(ang) * o.rx * C, o.cy + Math.sin(ang) * o.ry * C);
+        if (!o.seeded) { o.px[k] = t[0]; o.py[k] = t[1]; }
+        o.vx[k] += ((t[0] - o.px[k]) * SK - o.vx[k] * SD) * f; o.vy[k] += ((t[1] - o.py[k]) * SK - o.vy[k] * SD) * f;
+        o.px[k] += o.vx[k] * f; o.py[k] += o.vy[k] * f;
+      }
+      o.seeded = true;
+    }
+  }
+  function drawShape(o) {
+    const base = o.a * .9; ctx.lineJoin = 'round';
+    if (o.hub) { const c = snap(o.curX, o.cy);
+      ctx.globalAlpha = base * .35; ctx.strokeStyle = o.col; ctx.lineWidth = 1; ctx.beginPath();
+      for (let k = 0; k < o.n; k++) { ctx.moveTo(c[0], c[1]); ctx.lineTo(o.px[k], o.py[k]); } ctx.stroke();
+      dot(c[0], c[1], 3.5, o.col, base * .85); }
+    ctx.beginPath(); for (let k = 0; k < o.n; k++) k ? ctx.lineTo(o.px[k], o.py[k]) : ctx.moveTo(o.px[k], o.py[k]); ctx.closePath();
+    ctx.globalAlpha = base * .1; ctx.fillStyle = o.col; ctx.fill();
+    ctx.globalAlpha = base * .85; ctx.strokeStyle = o.col; ctx.lineWidth = 1.25; ctx.stroke();
+    for (let k = 0; k < o.n; k++) dot(o.px[k], o.py[k], 2.5, o.col, base);
+  }
+  function draw() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const { r0, r1, cols } = region;
+    for (const e of fx) {
+      if (e.t === 'drop' || e.t === 'snow') { // lit grid dots falling down a column, hopping row to row
+        const cl = shapes[0], start = Math.round((cl.cy - 13) / C) + 2, len = r1 - start; if (len < 2) continue;
+        const pos = ((time / e.speed + e.ph) % 1) * (len + 2), row = Math.floor(pos), frac = pos - row;
+        const col = e.c + (e.t === 'snow' ? (Math.floor(pos / 2) % 2 ? 1 : 0) : 0);
+        for (let k = 0; k < 3; k++) { const rr = row - k; if (rr < 0 || rr > len) continue;
+          const a = (k === 0 ? Math.min(1, frac * 3) : 1) * (1 - k / 3) * (rr > len - 1 ? 1 - frac : 1);
+          dot(G(col), G(start + rr), e.t === 'snow' ? 3 : 2.6 + (k === 0 ? .6 : 0), e.t === 'snow' ? INK : GREEN, a * (e.t === 'snow' ? .55 : .8)); }
+      }
+      if (e.t === 'ripple') { // dots light gold as a ring expands from the sun, like the header's heartbeat
+        const u = (time % e.every) / e.every, rad = 1.5 + u * 6, fade = 1 - u;
+        for (let r = r0; r <= r1; r++) for (let c = 0; c <= cols; c++) { const d = Math.hypot(c - e.c, r - e.r), w = 1 - Math.abs(d - rad) / .7;
+          if (w > 0 && d > shapes[0].rx + .4) dot(G(c), G(r), 1.5 + 1.5 * w, GOLD, w * fade * .7); }
+      }
+      if (e.t === 'bolt') { const u = time % e.every; if (u < .6) {
+        const top = Math.round((shapes[0].cy - 13) / C) + 2, pts = [[0, 0], [-1, 1], [1, 2], [0, 3], [1, 4]].map(([dc, dr]) => [G(e.c + dc), G(Math.min(r1, top + dr))]);
+        const a = u < .08 ? 1 : u < .14 ? .25 : u < .22 ? .95 : Math.max(0, .95 - (u - .22) * 2.5);
+        ctx.globalAlpha = a; ctx.strokeStyle = GOLD; ctx.lineWidth = 2.25; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke();
+        pts.forEach(p => dot(p[0], p[1], 3, GOLD, a)); } }
+    }
+    for (const o of shapes) drawShape(o);
+    for (const e of fx) if (e.t === 'signal') { // dashed link between the nearest corners, a pulse travels out and back
+      const u = (time % e.every) / e.every; if (u > .5) continue; const v = u / .5;
+      let best = 1e9, A, B; for (let i = 0; i < e.a.n; i++) for (let j = 0; j < e.b.n; j++) { const d = Math.hypot(e.a.px[i] - e.b.px[j], e.a.py[i] - e.b.py[j]); if (d < best) { best = d; A = [e.a.px[i], e.a.py[i]]; B = [e.b.px[j], e.b.py[j]]; } }
+      const vis = Math.sin(v * Math.PI); ctx.globalAlpha = vis * .55; ctx.strokeStyle = INK; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke(); ctx.setLineDash([]);
+      const q = v < .5 ? v * 2 : 2 - v * 2; dot(A[0] + (B[0] - A[0]) * q, A[1] + (B[1] - A[1]) * q, 3.5, GOLD, Math.min(1, vis * 1.6));
+    }
+    ctx.globalAlpha = 1;
+  }
+  function loop() { cancelAnimationFrame(raf); const tick = now => { const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (current === 'today' && document.visibilityState === 'visible') { step(dt); draw(); } raf = requestAnimationFrame(tick); }; raf = requestAnimationFrame(tick); }
   addEventListener('resize', () => { if (sky) build(sky); });
   return { build };
 })();
