@@ -1,5 +1,5 @@
 // Service worker: offline shell, cached briefs, and push notifications.
-const CACHE = 'briefs-v18';
+const CACHE = 'briefs-v19';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png',
   './templates/daily.html', './templates/gym.html', './templates/inbox.html'];
 

@@ -287,6 +287,7 @@ const WX = (() => {
   const C = 26, G = n => 13 + C * n, GOLD = '#D9A72E', GREEN = '#4C6B3F', INK = '#1E1E1D';
   const cv = $('wxart'), ctx = cv.getContext('2d');
   let shapes = [], fx = [], raf = 0, sky = null, region = null, last = 0, time = 0;
+  const touch = { x: 0, y: 0, active: false, str: 0 }, taps = [], RAD = 115, PUSH = 78;
   const snap = (x, y) => [G(Math.round((x - 13) / C)), G(Math.round((y - 13) / C))];
   function shape(o) { // o: cx, cy (px), rx, ry (cells), n, col, hub, spin, drift (cells), period (s)
     return Object.assign({ rot: Math.random() * 6.28, x0: o.cx, px: new Float32Array(o.n), py: new Float32Array(o.n), vx: new Float32Array(o.n), vy: new Float32Array(o.n), seeded: false, a: 1 }, o);
@@ -322,12 +323,16 @@ const WX = (() => {
   }
   function step(dt) {
     time += dt; const f = Math.min(3, dt * 60), SK = .2, SD = .42;
+    touch.str += ((touch.active ? 1 : 0) - touch.str) * Math.min(1, dt * (touch.active ? 9 : 4));
+    for (let i = taps.length - 1; i >= 0; i--) { taps[i].t += dt; if (taps[i].t > 1.1) taps.splice(i, 1); }
     for (const o of shapes) {
       o.rot += o.spin * dt;
       const off = o.drift ? Math.sin(time * 6.2832 / o.period) * o.drift * C : 0, cx = o.x0 + off;
       o.curX = cx;
       for (let k = 0; k < o.n; k++) {
-        const ang = o.rot + (k / o.n) * 6.2832, t = snap(cx + Math.cos(ang) * o.rx * C, o.cy + Math.sin(ang) * o.ry * C);
+        const ang = o.rot + (k / o.n) * 6.2832; let tx = cx + Math.cos(ang) * o.rx * C, ty = o.cy + Math.sin(ang) * o.ry * C;
+        if (touch.str > .01) { const dx = tx - touch.x, dy = ty - touch.y, d = Math.hypot(dx, dy) || 1; if (d < RAD) { const p = Math.pow(1 - d / RAD, 1.6) * PUSH * touch.str; tx += dx / d * p; ty += dy / d * p; } }
+        const t = snap(tx, ty);
         if (!o.seeded) { o.px[k] = t[0]; o.py[k] = t[1]; }
         o.vx[k] += ((t[0] - o.px[k]) * SK - o.vx[k] * SD) * f; o.vy[k] += ((t[1] - o.py[k]) * SK - o.vy[k] * SD) * f;
         o.px[k] += o.vx[k] * f; o.py[k] += o.vy[k] * f;
@@ -370,6 +375,16 @@ const WX = (() => {
         ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke();
         pts.forEach(p => dot(p[0], p[1], 3, GOLD, a)); } }
     }
+    if (touch.str > .01) { // lens: grid dots swell around the finger
+      const ci = Math.round((touch.x - 13) / C), cj = Math.round((touch.y - 13) / C), span = Math.ceil(RAD / C);
+      for (let j = cj - span; j <= cj + span; j++) for (let i = ci - span; i <= ci + span; i++) { if (i < 0 || j < 0) continue;
+        const d = Math.hypot(G(i) - touch.x, G(j) - touch.y), w = 1 - d / RAD; if (w > 0) dot(G(i), G(j), 1.2 + 2.4 * w * w, INK, .45 * w * touch.str); }
+    }
+    for (const tp of taps) { // tap: a ring of gold dots ripples out from the touch point
+      const u = tp.t / 1.1, rad = 10 + u * 170, ci = Math.round((tp.x - 13) / C), cj = Math.round((tp.y - 13) / C), span = Math.ceil(rad / C) + 1;
+      for (let j = cj - span; j <= cj + span; j++) for (let i = ci - span; i <= ci + span; i++) { if (i < 0 || j < 0) continue;
+        const w = 1 - Math.abs(Math.hypot(G(i) - tp.x, G(j) - tp.y) - rad) / 18; if (w > 0) dot(G(i), G(j), 1.5 + 2 * w, GOLD, w * (1 - u) * .85); }
+    }
     for (const o of shapes) drawShape(o);
     for (const e of fx) if (e.t === 'signal') { // dashed link between the nearest corners, a pulse travels out and back
       const u = (time % e.every) / e.every; if (u > .5) continue; const v = u / .5;
@@ -383,6 +398,11 @@ const WX = (() => {
   function loop() { cancelAnimationFrame(raf); const tick = now => { const dt = Math.min(.05, (now - last) / 1000); last = now;
     if (current === 'today' && document.visibilityState === 'visible') { step(dt); draw(); } raf = requestAnimationFrame(tick); }; raf = requestAnimationFrame(tick); }
   addEventListener('resize', () => { if (sky) build(sky); });
+  const pg = cv.parentElement;
+  const at = e => { const r = pg.getBoundingClientRect(); touch.x = e.clientX - r.left; touch.y = e.clientY - r.top + pg.scrollTop; };
+  pg.addEventListener('pointerdown', e => { if (!sky) return; at(e); touch.active = true; taps.push({ x: touch.x, y: touch.y, t: 0 }); if (taps.length > 4) taps.shift(); }, { passive: true });
+  pg.addEventListener('pointermove', e => { if (touch.active) at(e); }, { passive: true });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => pg.addEventListener(ev, () => { touch.active = false; }, { passive: true }));
   return { build };
 })();
 $('summary').addEventListener('click', e => { const t = e.target.closest('[data-go]'); if (t) go(t.dataset.go); });
