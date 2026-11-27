@@ -27,14 +27,32 @@ main{flex:1;position:relative;background:var(--bg)}
 iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
 .state{position:absolute;inset:0;display:grid;place-items:center;padding:32px;text-align:center;color:var(--soft);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
 .state b{display:block;color:var(--ink)}
-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;border-top:1px solid var(--hair-d);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
-nav button{all:unset;cursor:pointer;min-height:52px;display:grid;align-content:center;justify-items:center;gap:0;border-radius:14px;color:rgba(247,245,240,.55);text-align:center;padding:0 8px}
-nav button b{color:inherit}
-nav button span{font-size:13px}
-nav button[aria-current=true]{color:var(--bg)}
-nav button[aria-current=true] b::before{content:"◆ ";color:var(--gold)}
-nav button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;margin-left:4px;vertical-align:middle}
+nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--hair-d);padding:4px 6px calc(4px + env(safe-area-inset-bottom))}
+nav button{all:unset;cursor:pointer;position:relative;min-height:56px;display:grid;place-items:center;border-radius:14px;color:rgba(247,245,240,.5)}
+nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button[aria-current=true]{color:var(--gold)}
+nav button[aria-current=true]::after{content:"";position:absolute;bottom:4px;width:5px;height:5px;background:var(--gold);transform:rotate(45deg)}
+nav button .dot{position:absolute;top:12px;left:calc(50% + 9px);margin:0}
+nav button:focus-visible,.btn:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;margin-left:6px;vertical-align:middle}
+.today{position:absolute;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;color:var(--ink);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px;padding:calc(28px + env(safe-area-inset-top)) max(5vw,20px) 32px}
+.today .wrap{max-width:640px;margin:0 auto}
+.today .date{font-weight:700;display:flex;gap:8px}
+.today h1{margin:10px 0 24px}
+.cards{display:grid;gap:14px}
+.card{all:unset;cursor:pointer;display:grid;gap:6px;padding:18px 22px 20px;border-radius:25px;background:var(--ink);color:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08)}
+.card .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(217,167,46,.14);color:var(--gold);flex:none}
+.card .ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.card .top{display:flex;align-items:center;gap:10px;font-weight:700}
+.card .top .lb{flex:1;color:inherit;font-weight:700}
+.card .top span{color:rgba(247,245,240,.55);font-weight:300;white-space:nowrap}
+.card .hl{font:800 var(--h2)/1.12 "EB Garamond",Georgia,serif;letter-spacing:0;margin:2px 0;text-wrap:balance}
+.card .kv{color:rgba(247,245,240,.72)}
+.card .kv b{color:var(--gold)}
+.card.empty{background:rgba(30,30,29,.06);color:var(--soft);box-shadow:none;border:1px dashed rgba(30,30,29,.2)}
+.card.empty .top span,.card.empty .kv{color:var(--soft)}
+.today .foot{margin-top:26px;font-weight:700;color:var(--soft);display:flex;justify-content:space-between}
+.today .sdg{color:var(--gold);letter-spacing:.12em}
 .lock,.sheet{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:calc(32px + env(safe-area-inset-top)) max(6vw,22px) calc(32px + env(safe-area-inset-bottom))}
 .lock{background:var(--ink)}
 .lock .wrap{max-width:460px;width:100%;margin:0 auto}
@@ -60,12 +78,26 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
 <main id="main">
   <div class="state" id="state"><div><b>Loading your brief…</b></div></div>
   <iframe id="frame" title="Brief" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" hidden></iframe>
+  <section class="today" id="today" hidden><div class="wrap">
+    <div class="date"><span class="g">◆</span><span id="tdate"></span></div>
+    <h1 id="greet"></h1>
+    <div class="cards" id="cards"></div>
+    <div class="foot"><span>Logan's Briefs</span><span class="sdg">S.D.G.</span></div>
+  </div></section>
 </main>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-today" viewBox="0 0 24 24"><path d="M12 3l6.5 9L12 21l-6.5-9z"/></symbol>
+  <symbol id="i-daily" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></symbol>
+  <symbol id="i-gym" viewBox="0 0 24 24"><rect x="4.5" y="7" width="3" height="10" rx="1"/><rect x="16.5" y="7" width="3" height="10" rx="1"/><path d="M2.5 10v4M21.5 10v4M7.5 12h9"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.8 7l8.2 6 8.2-6"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></symbol>
+</svg>
 <nav id="tabs" aria-label="Briefs">
-  <button data-k="daily"><b>Daily</b><span id="t-daily">–</span></button>
-  <button data-k="gym"><b>Gym</b><span id="t-gym">–</span></button>
-  <button data-k="inbox"><b>Inbox</b><span id="t-inbox">–</span></button>
-  <button id="more" aria-label="Settings"><b>⋯</b><span>More</span></button>
+  <button data-k="today" aria-label="Today"><svg><use href="#i-today"/></svg></button>
+  <button data-k="daily" aria-label="Daily brief"><svg><use href="#i-daily"/></svg><i class="dot" id="d-daily" hidden></i></button>
+  <button data-k="gym" aria-label="Gym brief"><svg><use href="#i-gym"/></svg><i class="dot" id="d-gym" hidden></i></button>
+  <button data-k="inbox" aria-label="Inbox brief"><svg><use href="#i-inbox"/></svg><i class="dot" id="d-inbox" hidden></i></button>
+  <button id="more" aria-label="Settings"><svg><use href="#i-more"/></svg></button>
 </nav>
 
 <div class="lock" id="lock" hidden><div class="wrap">
@@ -140,37 +172,74 @@ function when(iso) {
                : d.toLocaleDateString([], { weekday: 'short' });
 }
 function seen(k, iso) { return store.get('seen-' + k) === iso; }
+function markDots() { KINDS.forEach(k => { const c = cache[k]; $('d-' + k).hidden = !c || seen(k, c.env.updated); }); }
 
 async function loadAll() {
   await Promise.all(KINDS.map(async k => {
     try {
       const env = await getEnv(k);
-      cache[k] = { env };
-      $('t-' + k).innerHTML = when(env.updated) + (seen(k, env.updated) ? '' : '<i class="dot" aria-label="new"></i>');
-    } catch { $('t-' + k).textContent = '–'; }
+      if (!cache[k] || cache[k].env.updated !== env.updated) cache[k] = { env };
+    } catch { delete cache[k]; }
   }));
+  markDots();
 }
+async function dataFor(k) { const c = cache[k]; return c ? (c.data || (c.data = await decrypt(c.env, pass))) : null; }
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LABEL = { daily: 'Daily Brief', gym: 'Gym Brief', inbox: 'Inbox Brief' };
+const EMPTY = { daily: 'Arrives each morning around 6.', gym: 'Arrives each afternoon around 5.', inbox: 'Arrives each evening around 7.' };
+function keyLine(k, d) {
+  if (k === 'daily') { const w = d.weather || {}; const n = (d.cal || []).length;
+    return `<b>${esc(w.hi)}°</b> / ${esc(w.lo)}° · Rain ${esc(w.rain)}%` + (n ? ` · ${n} on the calendar` : ''); }
+  if (k === 'gym') { if (d.rest) return '<b>Rest day</b> · No workout on the calendar';
+    return [`<b>${esc(d.session)}</b>`, esc(d.time), (d.plan || []).length ? (d.plan.length + ' exercises') : ''].filter(Boolean).join(' · '); }
+  const a = d.action || {}, f = d.folders || [];
+  const total = f.reduce((s, x) => s + (x.items || []).length, 0);
+  return (a.urgent ? `<b>${esc(a.text)}</b>` : 'Nothing urgent') + ` · ${total} filed` + ((d.inbox || []).length ? ` · ${d.inbox.length} left` : '');
+}
+function trimAccent(d) { const h = String(d.headline || ''), a = String(d.accent || ''); const t = a && h.startsWith(a) ? h.slice(a.length).trim() : h; return t || h; }
+function greeting() { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
+
+async function showToday() {
+  $('frame').hidden = true; $('state').hidden = true; $('today').hidden = false;
+  $('tdate').textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).replace(',', ' ·');
+  $('greet').innerHTML = esc(greeting()) + ', <span class="g">Logan.</span>';
+  const order = new Date().getHours() >= 17 ? ['inbox', 'gym', 'daily'] : new Date().getHours() >= 12 ? ['gym', 'daily', 'inbox'] : ['daily', 'gym', 'inbox'];
+  const html = await Promise.all(order.map(async k => {
+    const c = cache[k];
+    if (!c) return `<button class="card empty" data-go="${k}"><div class="top"><span class="ic"><svg><use href="#i-${k}"/></svg></span><span class="lb">${LABEL[k]}</span><span>Not yet</span></div><div class="kv">${EMPTY[k]}</div></button>`;
+    let d; try { d = await dataFor(k); } catch { d = null; }
+    const isNew = !seen(k, c.env.updated);
+    return `<button class="card" data-go="${k}">` +
+      `<div class="top"><span class="ic"><svg><use href="#i-${k}"/></svg></span><span class="lb">${LABEL[k]}${isNew ? '<i class="dot" aria-label="new"></i>' : ''}</span><span>${esc(when(c.env.updated))}</span></div>` +
+      (d ? `<div class="hl">${esc(trimAccent(d))}</div><div class="kv">${keyLine(k, d)}</div>` : '<div class="kv">Couldn’t unlock this brief.</div>') + '</button>';
+  }));
+  $('cards').innerHTML = html.join('');
+}
+$('cards').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) location.hash = b.dataset.go; });
 
 async function show(k) {
-  if (!KINDS.includes(k)) k = 'daily';
+  if (k !== 'today' && !KINDS.includes(k)) k = 'today';
   document.querySelectorAll('nav button[data-k]').forEach(b => b.setAttribute('aria-current', b.dataset.k === k));
+  if (k === 'today') return showToday();
+  $('today').hidden = true;
   const frame = $('frame'), st = $('state');
   const c = cache[k];
   if (!c) { frame.hidden = true; st.hidden = false; st.innerHTML = '<div><b>No brief yet.</b>It shows up here after its next scheduled run.</div>'; return; }
   try {
-    const data = c.data || (c.data = await decrypt(c.env, pass));
+    const data = await dataFor(k);
     const html = (await getTpl(k)).replace('<!--BRIEF-DATA-->',
       '<script type="application/json" id="brief">' + JSON.stringify(data).replace(/</g, '\\u003c') + '<\/script>' +
       '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a){a.target="_blank";a.rel="noopener"}},true)<\/script>');
     frame.srcdoc = html; frame.hidden = false; st.hidden = true;
     store.set('seen-' + k, c.env.updated);
-    $('t-' + k).textContent = when(c.env.updated);
+    markDots();
   } catch (err) {
     frame.hidden = true; st.hidden = false;
     st.innerHTML = '<div><b>Couldn’t unlock this brief.</b>The passphrase may have changed. Open More → Forget passphrase.</div>';
   }
 }
-const route = () => show((location.hash || '#daily').slice(1));
+const route = () => show((location.hash || '#today').slice(1));
 
 async function start() {
   if (!pass) { $('lock').hidden = false; $('pass').focus(); return; }
@@ -194,7 +263,10 @@ document.querySelectorAll('nav button[data-k]').forEach(b => b.addEventListener(
 }));
 addEventListener('hashchange', route);
 document.addEventListener('visibilitychange', async () => {
-  if (document.visibilityState === 'visible' && pass) { const k = (location.hash || '#daily').slice(1); const before = cache[k] && cache[k].env.updated; await loadAll(); if (cache[k] && cache[k].env.updated !== before) show(k); }
+  if (document.visibilityState !== 'visible' || !pass) return;
+  const k = (location.hash || '#today').slice(1); const before = cache[k] && cache[k].env.updated;
+  await loadAll();
+  if (k === 'today' || (cache[k] && cache[k].env.updated !== before)) show(k);
 });
 
 // Settings sheet

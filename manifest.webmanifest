@@ -2,7 +2,7 @@
   "name": "Logan's Briefs",
   "short_name": "Briefs",
   "id": "./",
-  "start_url": "./#daily",
+  "start_url": "./#today",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1E1E1D",
