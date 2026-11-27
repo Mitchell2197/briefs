@@ -39,27 +39,27 @@ b{font-weight:700}.g{color:var(--gold)}
 
 /* Liquid Glass: blurred, saturated backdrop + tint + specular edge + depth */
 .glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
-.topfade{display:none;position:absolute;inset:0 0 auto 0;height:var(--safe-top);z-index:4;pointer-events:none;background:linear-gradient(rgba(30,30,29,.5),rgba(30,30,29,.3));-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
+.topfade{position:absolute;inset:0 0 auto 0;height:calc(var(--safe-top) + 34px);z-index:4;pointer-events:none;background:linear-gradient(to bottom,var(--bg) 0,var(--bg) var(--safe-top),rgba(247,245,240,.85) calc(var(--safe-top) + 10px),rgba(247,245,240,0) 100%)}
 
 /* Dock */
 .dock{position:absolute;left:0;right:0;bottom:var(--bar-gap);z-index:5;display:flex;justify-content:center;align-items:center;gap:10px;padding:0 16px;pointer-events:none;transition:transform .45s var(--spring)}
 nav{pointer-events:auto;position:relative;display:flex;padding:5px;border-radius:999px;touch-action:none;transition:padding .35s var(--ease)}
-nav button,.roundbtn{all:unset;cursor:pointer;position:relative;z-index:1;width:62px;height:52px;display:grid;place-items:center;border-radius:999px;color:rgba(247,245,240,.72);transition:color .3s,width .38s var(--ease),opacity .25s}
+nav button,.roundbtn{all:unset;cursor:pointer;position:relative;z-index:1;width:62px;height:52px;display:grid;place-items:center;border-radius:999px;color:rgba(247,245,240,.72);transition:color .3s,width .38s var(--ease),height .38s var(--ease),opacity .25s}
 nav button[aria-current=true]{color:var(--gold)}
 nav svg,.roundbtn svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s var(--spring)}
 nav button:active svg,.roundbtn:active svg{transform:scale(.86)}
 nav .dot{position:absolute;top:9px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--gold)}
-.lens{position:absolute;z-index:0;top:5px;left:0;width:62px;height:52px;border-radius:999px;background:rgba(247,245,240,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,0,.12),0 2px 10px rgba(0,0,0,.12);pointer-events:none;transform-origin:center}
+.lens{position:absolute;z-index:0;top:5px;left:0;width:62px;height:52px;transition:height .38s var(--ease),top .38s var(--ease);border-radius:999px;background:rgba(247,245,240,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,0,.12),0 2px 10px rgba(0,0,0,.12);pointer-events:none;transform-origin:center}
 nav.drag .lens{background:rgba(247,245,240,.24)}
 .roundbtn{pointer-events:auto;width:62px;height:62px;transition:width .38s var(--ease),height .38s var(--ease),transform .35s var(--spring)}
 .roundbtn.glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
 /* Minimized while scrolling down: only the current tab stays */
 .dock.mini{transform:translateY(6px)}
 .dock.mini nav{padding:3px}
-.dock.mini nav button:not([aria-current=true]){width:0;opacity:0;pointer-events:none}
-.dock.mini nav button[aria-current=true]{width:54px;height:46px}
-.dock.mini .lens{height:46px;top:3px}
-.dock.mini .roundbtn{width:52px;height:52px}
+.dock.mini nav button:not([aria-current=true]){width:0;height:48px;opacity:0;pointer-events:none}
+.dock.mini nav button[aria-current=true]{width:48px;height:48px}
+.dock.mini .lens{width:48px;height:48px;top:3px}
+.dock.mini .roundbtn{width:54px;height:54px}
 nav button:focus-visible,.roundbtn:focus-visible,.btn:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 /* Today */
@@ -324,7 +324,7 @@ function setMini(on) {
   dock.classList.toggle('mini', on);
   // Keep the lens glued to the active tab while the bar resizes.
   const t0 = performance.now(); cancelAnimationFrame(miniTimer);
-  const follow = () => { const b = btn(current); if (b) { lens.style.transition = 'none'; setLens(b.offsetLeft, b.offsetWidth); } if (performance.now() - t0 < 450) miniTimer = requestAnimationFrame(follow); };
+  const follow = () => { const b = btn(current); if (b) { lens.style.transition = 'none'; lens.style.height = b.offsetHeight + 'px'; lens.style.top = b.offsetTop + 'px'; setLens(b.offsetLeft, b.offsetWidth); } if (performance.now() - t0 < 450) miniTimer = requestAnimationFrame(follow); };
   follow();
 }
 function onScroll(y, down) { if (y < 40) setMini(false); else setMini(down); }
