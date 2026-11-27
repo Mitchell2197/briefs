@@ -17,28 +17,32 @@
    IDEA: a slim dark case that holds the day's three briefs; the brief itself is the picture.
    TYPE: three sizes. H1 = lock-screen title. H2 = sheet titles. P = everything else.
    LAYOUT: brief fills the screen, dark tab bar at the bottom, settings slide up as a sheet. */
-:root{--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--green:#4C6B3F;--hair-d:rgba(247,245,240,.14);--h1:clamp(38px,9vw,56px);--h2:28px;--p:16px}
+:root{--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--green:#4C6B3F;--hair-d:rgba(247,245,240,.14);--h1:clamp(38px,6.4vw,60px);--h2:clamp(26px,3.6vw,34px);--p:16px;--safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);--top-pad:calc(var(--safe-top) + 24px);--bar-gap:max(10px,calc(var(--safe-bot) - 12px));--glass:rgba(30,30,29,.68);--glass-edge:rgba(247,245,240,.22)}
 *{box-sizing:border-box;min-width:0}
 html,body{height:100%}
-body{margin:0;background:var(--ink);color:var(--bg);font:300 var(--p)/1.55 Inter,-apple-system,sans-serif;letter-spacing:-.01em;display:flex;flex-direction:column;overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--bg);font:300 var(--p)/1.55 Inter,-apple-system,sans-serif;letter-spacing:-.01em;display:flex;flex-direction:column;overflow:hidden}
 b{font-weight:700}
 .g{color:var(--gold)}
 main{flex:1;position:relative;background:var(--bg)}
 iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
-.state{position:absolute;inset:0;display:grid;place-items:center;padding:32px;text-align:center;color:var(--soft);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
+.state{position:absolute;inset:0;padding-top:var(--top-pad)!important;display:grid;place-items:center;padding:32px;text-align:center;color:var(--soft);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
 .state b{display:block;color:var(--ink)}
-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--hair-d);padding:4px 6px calc(4px + env(safe-area-inset-bottom))}
-nav button{all:unset;cursor:pointer;position:relative;min-height:56px;display:grid;place-items:center;border-radius:14px;color:rgba(247,245,240,.5)}
-nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-nav button[aria-current=true]{color:var(--gold)}
-nav button[aria-current=true]::after{content:"";position:absolute;bottom:4px;width:5px;height:5px;background:var(--gold);transform:rotate(45deg)}
-nav button .dot{position:absolute;top:12px;left:calc(50% + 9px);margin:0}
-nav button:focus-visible,.btn:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+/* Liquid Glass: blurred, saturated backdrop + tint + specular top edge + soft depth */
+.glass,.roundbtn.glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
+.topfade{position:fixed;inset:0 0 auto 0;height:var(--safe-top);z-index:4;pointer-events:none;background:linear-gradient(rgba(30,30,29,.55),rgba(30,30,29,.35));-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
+.dock{position:fixed;left:0;right:0;bottom:var(--bar-gap);z-index:4;display:flex;justify-content:center;align-items:center;gap:10px;padding:0 16px;pointer-events:none}
+nav{pointer-events:auto;display:flex;gap:2px;padding:5px;border-radius:999px}
+nav button,.roundbtn{all:unset;cursor:pointer;position:relative;width:62px;height:52px;display:grid;place-items:center;border-radius:999px;color:rgba(247,245,240,.72);transition:background .25s,color .25s}
+.roundbtn{pointer-events:auto;width:62px;height:62px}
+nav svg,.roundbtn svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button[aria-current=true]{color:var(--gold);background:rgba(247,245,240,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+nav button .dot{position:absolute;top:9px;left:calc(50% + 8px);margin:0}
+nav button:focus-visible,.roundbtn:focus-visible,.btn:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;margin-left:6px;vertical-align:middle}
-.today{position:absolute;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;color:var(--ink);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px;padding:calc(28px + env(safe-area-inset-top)) max(5vw,20px) 32px}
-.today .wrap{max-width:640px;margin:0 auto}
+.today{position:absolute;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;color:var(--ink);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px;padding:var(--top-pad) max(5vw,20px) calc(var(--bar-gap) + 100px)}
+.today .wrap{max-width:1000px;margin:0 auto}
 .today .date{font-weight:700;display:flex;gap:8px}
-.today h1{margin:10px 0 24px}
+.today h1{margin:10px 0 28px;max-width:21ch}
 .cards{display:grid;gap:14px}
 .card{all:unset;cursor:pointer;display:grid;gap:6px;padding:18px 22px 20px;border-radius:25px;background:var(--ink);color:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.08)}
 .card .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(217,167,46,.14);color:var(--gold);flex:none}
@@ -53,7 +57,7 @@ nav button:focus-visible,.btn:focus-visible,input:focus-visible,.card:focus-visi
 .card.empty .top span,.card.empty .kv{color:var(--soft)}
 .today .foot{margin-top:26px;font-weight:700;color:var(--soft);display:flex;justify-content:space-between}
 .today .sdg{color:var(--gold);letter-spacing:.12em}
-.lock,.sheet{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:calc(32px + env(safe-area-inset-top)) max(6vw,22px) calc(32px + env(safe-area-inset-bottom))}
+.lock,.sheet{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:var(--top-pad) max(5vw,20px) calc(var(--safe-bot) + 24px)}
 .lock{background:var(--ink)}
 .lock .wrap{max-width:460px;width:100%;margin:0 auto}
 .dia{color:var(--gold);font-weight:700}
@@ -65,8 +69,9 @@ input{width:100%;font:400 16px Inter,sans-serif;padding:14px 16px;border-radius:
 .btn{all:unset;cursor:pointer;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;margin-top:14px}
 .btn.ghost{background:transparent;color:var(--bg);border:1px solid var(--hair-d)}
 .err{color:var(--gold);font-weight:700;min-height:1.6em;margin-top:10px}
-.sheet{background:rgba(0,0,0,.45);justify-content:flex-end;padding:0}
-.panel{background:var(--ink);border-radius:25px 25px 0 0;padding:26px max(6vw,22px) calc(26px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;border-top:1px solid var(--hair-d)}
+.sheet{background:rgba(0,0,0,.28);justify-content:flex-end;padding:0 10px var(--bar-gap)}
+.panel{border-radius:34px;padding:10px 22px 18px;max-height:80vh;overflow:auto;--glass:rgba(30,30,29,.72)}
+.grab{width:38px;height:5px;border-radius:3px;background:rgba(247,245,240,.3);margin:0 auto 6px}
 .sec{padding:18px 0;border-bottom:1px solid var(--hair-d)}
 .sec:last-child{border-bottom:0}
 .row{display:flex;flex-wrap:wrap;gap:10px}
@@ -92,13 +97,14 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
   <symbol id="i-inbox" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.8 7l8.2 6 8.2-6"/></symbol>
   <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></symbol>
 </svg>
-<nav id="tabs" aria-label="Briefs">
+<div class="topfade" aria-hidden="true"></div>
+<div class="dock"><nav id="tabs" class="glass" aria-label="Briefs">
   <button data-k="today" aria-label="Today"><svg><use href="#i-today"/></svg></button>
   <button data-k="daily" aria-label="Daily brief"><svg><use href="#i-daily"/></svg><i class="dot" id="d-daily" hidden></i></button>
   <button data-k="gym" aria-label="Gym brief"><svg><use href="#i-gym"/></svg><i class="dot" id="d-gym" hidden></i></button>
   <button data-k="inbox" aria-label="Inbox brief"><svg><use href="#i-inbox"/></svg><i class="dot" id="d-inbox" hidden></i></button>
-  <button id="more" aria-label="Settings"><svg><use href="#i-more"/></svg></button>
 </nav>
+<button id="more" class="roundbtn glass" aria-label="Settings"><svg><use href="#i-more"/></svg></button></div>
 
 <div class="lock" id="lock" hidden><div class="wrap">
   <div class="dia">◆ Logan's Briefs</div>
@@ -112,7 +118,7 @@ textarea{width:100%;min-height:110px;font:400 13px ui-monospace,Menlo,monospace;
   </form>
 </div></div>
 
-<div class="sheet" id="sheet" hidden><div class="panel" role="dialog" aria-label="Settings">
+<div class="sheet" id="sheet" hidden><div class="panel glass" role="dialog" aria-label="Settings"><div class="grab"></div>
   <div class="sec">
     <h2>Notifications</h2>
     <p class="muted" id="nstat" style="margin-bottom:0"></p>
@@ -171,6 +177,13 @@ function when(iso) {
   return today ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
                : d.toLocaleDateString([], { weekday: 'short' });
 }
+// The brief pages run inside a frame that can't see the phone's status bar, so measure it here and pass it in.
+function measure(prop) { const d = document.createElement('div'); d.style.cssText = 'position:fixed;visibility:hidden;padding-top:' + prop; document.body.appendChild(d); const v = parseFloat(getComputedStyle(d).paddingTop) || 0; d.remove(); return v; }
+function frameCSS() {
+  const top = measure('var(--safe-top)'), bot = measure('var(--safe-bot)');
+  const gap = Math.max(10, bot - 12);
+  return '<style>header.band{padding-top:' + (top + 24) + 'px!important}footer.band{padding-bottom:' + (gap + 110) + 'px!important}html{-webkit-text-size-adjust:100%}</style>';
+}
 function seen(k, iso) { return store.get('seen-' + k) === iso; }
 function markDots() { KINDS.forEach(k => { const c = cache[k]; $('d-' + k).hidden = !c || seen(k, c.env.updated); }); }
 
@@ -228,7 +241,7 @@ async function show(k) {
   if (!c) { frame.hidden = true; st.hidden = false; st.innerHTML = '<div><b>No brief yet.</b>It shows up here after its next scheduled run.</div>'; return; }
   try {
     const data = await dataFor(k);
-    const html = (await getTpl(k)).replace('<!--BRIEF-DATA-->',
+    const html = (await getTpl(k)).replace('<!--BRIEF-DATA-->', frameCSS() +
       '<script type="application/json" id="brief">' + JSON.stringify(data).replace(/</g, '\\u003c') + '<\/script>' +
       '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a){a.target="_blank";a.rel="noopener"}},true)<\/script>');
     frame.srcdoc = html; frame.hidden = false; st.hidden = true;
