@@ -8,16 +8,16 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Briefs">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1E1E1D">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F7F5F0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@800&family=Inter:wght@300;700&display=swap" rel="stylesheet">
 <style>
 /* BRAND: Logan Rhodes. #F7F5F0 / #1E1E1D, gold #D9A72E. Same system as every brief.
    IDEA: four pages held side by side; a Liquid Glass tab bar with one lens that glides between tabs.
    TYPE: three sizes. H1 = page titles (matches the briefs). H2 = sheet titles and card headlines. P = everything else.
-   LAYOUT: app sized to the real screen (iOS under-reports it for home-screen apps); glass status strip on top,
-   floating glass dock above the home indicator; pages slide; dock shrinks while you scroll down. */
+   LAYOUT: standard status bar (app starts below it and runs to the bottom edge); floating glass dock above
+   the home indicator; pages slide; dock shrinks while you scroll down. */
 :root{--bg:#F7F5F0;--ink:#1E1E1D;--soft:#5d5c58;--gold:#D9A72E;--hair-d:rgba(247,245,240,.14);
   --h1:clamp(38px,6.4vw,60px);--h2:clamp(26px,3.6vw,34px);--p:16px;
   --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
@@ -30,7 +30,7 @@ b{font-weight:700}.g{color:var(--gold)}
 [hidden]{display:none!important}
 
 /* App shell sized to the true screen */
-#app{position:fixed;top:0;left:0;right:0;height:var(--app-h);overflow:hidden;background:var(--bg)}
+#app{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
 .page{position:absolute;inset:0;background:var(--bg);visibility:hidden;will-change:transform,opacity}
 .page.on{visibility:visible}
 .page iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
@@ -39,7 +39,7 @@ b{font-weight:700}.g{color:var(--gold)}
 
 /* Liquid Glass: blurred, saturated backdrop + tint + specular edge + depth */
 .glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 30px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
-.topfade{position:absolute;inset:0 0 auto 0;height:var(--safe-top);z-index:4;pointer-events:none;background:linear-gradient(rgba(30,30,29,.5),rgba(30,30,29,.3));-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
+.topfade{display:none;position:absolute;inset:0 0 auto 0;height:var(--safe-top);z-index:4;pointer-events:none;background:linear-gradient(rgba(30,30,29,.5),rgba(30,30,29,.3));-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
 
 /* Dock */
 .dock{position:absolute;left:0;right:0;bottom:var(--bar-gap);z-index:5;display:flex;justify-content:center;align-items:center;gap:10px;padding:0 16px;pointer-events:none;transition:transform .45s var(--spring)}
@@ -193,14 +193,7 @@ const cache = {}, tpl = {}, rendered = {};
 const ub = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 
-// ---- Size the app to the real screen. iOS reports a short viewport for home-screen apps.
-function sizeApp() {
-  const portrait = matchMedia('(orientation: portrait)').matches;
-  const screenH = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
-  const h = isStandalone ? Math.max(innerHeight, screenH) : innerHeight;
-  document.documentElement.style.setProperty('--app-h', h + 'px');
-}
-sizeApp(); addEventListener('resize', () => { sizeApp(); placeLens(false); });
+addEventListener('resize', () => placeLens(false));
 
 // ---- Data
 async function decrypt(env, pw) {
