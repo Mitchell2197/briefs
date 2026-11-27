@@ -591,7 +591,7 @@ async function go(k, opts = {}) {
   if (location.hash !== '#' + k) history.replaceState(null, '', '#' + k);
   const prev = current; current = k;
   ORDER.forEach(x => btn(x).setAttribute('aria-current', x === k));
-  $('dock').classList.toggle('away', k === 'verse'); document.querySelector('.topfade').classList.toggle('dark', k === 'verse'); $('homebtn').classList.toggle('on', k === 'verse');
+  $('dock').classList.toggle('away', k === 'verse'); document.querySelector('.topfade').classList.toggle('dark', k === 'verse'); document.querySelector('meta[name=theme-color]').setAttribute('content', k === 'verse' ? '#1E1E1D' : '#F7F5F0'); $('homebtn').classList.toggle('on', k === 'verse');
   if (k === 'verse') renderVerse();
   setMini(false); placeLens(!!prev && !opts.instant);
   if (k === 'today') await renderToday(); else if (k !== 'verse') await renderBrief(k);
