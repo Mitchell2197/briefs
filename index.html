@@ -31,9 +31,9 @@ b{font-weight:700}.g{color:var(--gold)}
 
 /* App shell sized to the true screen */
 #app{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
-.page{position:absolute;inset:0;background:var(--bg);visibility:hidden;will-change:transform,opacity}
+.page{position:absolute;inset:0;background:var(--bg);visibility:hidden;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 .page.on{visibility:visible}
-.page iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+.page iframe{display:block;width:100%;height:100vh;border:0;background:var(--bg);overflow:hidden}
 .state{position:absolute;inset:0;display:grid;place-items:center;padding:var(--top-pad) 32px 32px;text-align:center;color:var(--soft);background:var(--bg) radial-gradient(rgba(150,150,150,.28) 1px,transparent 1.2px) 0 0/26px 26px}
 .state b{display:block;color:var(--ink)}
 
@@ -225,9 +225,10 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 function measure(prop) { const d = document.createElement('div'); d.style.cssText = 'position:fixed;visibility:hidden;padding-top:' + prop; document.body.appendChild(d); const v = parseFloat(getComputedStyle(d).paddingTop) || 0; d.remove(); return v; }
 function frameExtras() {
   const top = measure('var(--safe-top)'), gap = measure('var(--bar-gap)');
-  return '<style>header.band{padding-top:' + (top + 24) + 'px!important}footer.band{padding-bottom:' + (gap + 110) + 'px!important}html{-webkit-text-size-adjust:100%}</style>' +
+  return '<style>html,body{overflow:hidden!important;height:auto!important}header.band{padding-top:' + (top + 24) + 'px!important}footer.band{padding-bottom:' + (gap + 110) + 'px!important}html{-webkit-text-size-adjust:100%}</style>' +
     '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a){a.target="_blank";a.rel="noopener"}},true);' +
-    'var ly=0,t=0;addEventListener("scroll",function(){var y=scrollY;if(Math.abs(y-ly)>6){parent.postMessage({briefScroll:y,down:y>ly},"*");ly=y}},{passive:true});<\/script>';
+    'function h(){parent.postMessage({briefHeight:Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0)},"*")}' +
+    'addEventListener("load",h);if(window.ResizeObserver)new ResizeObserver(h).observe(document.documentElement);if(document.fonts)document.fonts.ready.then(h);setTimeout(h,300);setTimeout(h,1500);<\/script>';
 }
 async function renderBrief(k) {
   const pg = page(k), frame = pg.querySelector('iframe'), st = pg.querySelector('.state');
@@ -290,9 +291,9 @@ function placeLens(animate) {
   setLens(to, b.offsetWidth);
 }
 // Drag across the bar: the lens follows, the tab under it is chosen on release.
-let dragging = false, startX = 0, moved = false;
+let dragging = false, startX = 0, moved = false, expandOnUp = false;
 nav.addEventListener('pointerdown', e => {
-  if (dock.classList.contains('mini')) return;
+  if (dock.classList.contains('mini')) { expandOnUp = true; return; }
   dragging = true; moved = false; startX = e.clientX; nav.setPointerCapture(e.pointerId);
 });
 nav.addEventListener('pointermove', e => {
@@ -304,6 +305,7 @@ nav.addEventListener('pointermove', e => {
   setLens(x);
 });
 nav.addEventListener('pointerup', e => {
+  if (expandOnUp) { expandOnUp = false; setMini(false); return; }
   if (!dragging) return; dragging = false; nav.classList.remove('drag');
   const r = nav.getBoundingClientRect(), x = e.clientX - r.left;
   let pick = null;
@@ -312,7 +314,7 @@ nav.addEventListener('pointerup', e => {
   if (pick) go(pick); else placeLens(true);
 });
 nav.addEventListener('click', e => { if (e.detail === 0) { const b = e.target.closest('button[data-k]'); if (b) go(b.dataset.k); } }); // keyboard
-nav.addEventListener('pointercancel', () => { dragging = false; nav.classList.remove('drag'); placeLens(true); });
+nav.addEventListener('pointercancel', () => { dragging = false; expandOnUp = false; nav.classList.remove('drag'); placeLens(true); });
 
 // ---- Minimize the dock while scrolling down, bring it back on scroll up or tap.
 const dock = $('dock');
@@ -326,16 +328,19 @@ function setMini(on) {
   follow();
 }
 function onScroll(y, down) { if (y < 40) setMini(false); else setMini(down); }
-dock.addEventListener('click', e => { if (dock.classList.contains('mini')) { e.stopPropagation(); setMini(false); } }, true);
+nav.addEventListener('click', e => { if (dock.classList.contains('mini') && e.detail === 0) { e.stopPropagation(); setMini(false); } }, true);
 addEventListener('message', e => {
-  if (!e.data || typeof e.data.briefScroll !== 'number' || current === 'today') return;
-  const f = page(current).querySelector('iframe'); if (f && e.source === f.contentWindow) onScroll(e.data.briefScroll, e.data.down);
+  if (!e.data || typeof e.data.briefHeight !== 'number') return;
+  for (const k of KINDS) {
+    const f = page(k).querySelector('iframe');
+    if (f && e.source === f.contentWindow) { const hgt = Math.max(Math.ceil(e.data.briefHeight), 200); if (Math.abs(parseFloat(f.style.height || 0) - hgt) > 1) f.style.height = hgt + 'px'; }
+  }
 });
-let lastTodayY = 0;
-page('today').addEventListener('scroll', e => { const y = e.target.scrollTop; if (Math.abs(y - lastTodayY) > 6) { onScroll(y, y > lastTodayY); lastTodayY = y; } }, { passive: true });
+ORDER.forEach(k => { let last = 0; page(k).addEventListener('scroll', e => { if (k !== current) return; const y = e.target.scrollTop; if (Math.abs(y - last) > 6) { onScroll(y, y > last); last = y; } }, { passive: true }); });
 
 // ---- Page switching with a slide, direction follows tab order.
 let busy = null;
+function settle() { document.querySelectorAll('.page').forEach(p => { const on = p.dataset.page === current; p.classList.toggle('on', on); p.style.zIndex = ''; p.style.pointerEvents = ''; }); }
 async function go(k, opts = {}) {
   if (!ORDER.includes(k)) k = 'today';
   if (location.hash !== '#' + k) history.replaceState(null, '', '#' + k);
@@ -343,23 +348,20 @@ async function go(k, opts = {}) {
   ORDER.forEach(x => btn(x).setAttribute('aria-current', x === k));
   setMini(false); placeLens(!!prev && !opts.instant);
   if (k === 'today') await renderToday(); else await renderBrief(k);
+  if (current !== k) return; // another tab was picked meanwhile
   if (k !== 'today' && cache[k]) { store.set('seen-' + k, cache[k].env.updated); markDots(); }
-  const incoming = page(k);
-  if (!prev || prev === k || opts.instant || reduce) {
-    document.querySelectorAll('.page').forEach(p => p.classList.toggle('on', p === incoming));
-    return;
-  }
-  const outgoing = page(prev), dir = ORDER.indexOf(k) > ORDER.indexOf(prev) ? 1 : -1;
-  if (busy) busy.forEach(a => a.finish());
-  incoming.classList.add('on'); incoming.style.zIndex = 2; outgoing.style.zIndex = 1;
+  if (busy) { busy.forEach(a => a.cancel()); busy = null; settle(); }
+  if (!prev || prev === k || opts.instant || reduce) { settle(); return; }
+  const incoming = page(k), outgoing = page(prev), dir = ORDER.indexOf(k) > ORDER.indexOf(prev) ? 1 : -1;
+  incoming.classList.add('on'); outgoing.classList.add('on');
+  incoming.style.zIndex = 2; outgoing.style.zIndex = 1; outgoing.style.pointerEvents = 'none';
   const opt = { duration: 420, easing: 'cubic-bezier(.2,.85,.2,1)' };
-  busy = [
+  const anims = busy = [
     incoming.animate([{ transform: `translateX(${dir * 28}%)`, opacity: 0 }, { transform: 'translateX(0)', opacity: 1 }], opt),
     outgoing.animate([{ transform: 'translateX(0) scale(1)', opacity: 1 }, { transform: `translateX(${-dir * 12}%) scale(.97)`, opacity: 0 }], opt)
   ];
-  await busy[0].finished.catch(() => {});
-  if (current === k) { outgoing.classList.remove('on'); outgoing.style.zIndex = ''; incoming.style.zIndex = ''; }
-  busy = null;
+  try { await anims[0].finished; } catch {}
+  if (busy === anims) { busy = null; settle(); }
 }
 addEventListener('hashchange', () => go(location.hash.slice(1)));
 
@@ -413,7 +415,11 @@ $('sheet').addEventListener('click', e => { if (e.target === $('sheet')) closeSh
   panel.addEventListener('touchend', e => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; panel.style.transition = ''; panel.style.transform = ''; if (dy > 90) closeSheet(); });
 }
 $('reload').addEventListener('click', async () => { KINDS.forEach(k => { if (cache[k]) cache[k].data = null; rendered[k] = null; }); await loadAll(); closeSheet(); go(current, { instant: true }); KINDS.forEach(k => renderBrief(k)); });
-$('forget').addEventListener('click', () => { store.del('briefs-pass'); pass = null; closeSheet(); KINDS.forEach(k => { if (cache[k]) cache[k].data = null; rendered[k] = null; }); start(); });
+let forgetArmed = 0;
+$('forget').addEventListener('click', () => {
+  if (!forgetArmed) { $('forget').textContent = 'Tap again to forget'; forgetArmed = setTimeout(() => { forgetArmed = 0; $('forget').textContent = 'Forget passphrase'; }, 3000); return; }
+  clearTimeout(forgetArmed); forgetArmed = 0; $('forget').textContent = 'Forget passphrase';
+  store.del('briefs-pass'); pass = null; closeSheet(); KINDS.forEach(k => { if (cache[k]) cache[k].data = null; rendered[k] = null; }); start(); });
 
 function b64u(s) { const p = '='.repeat((4 - s.length % 4) % 4); return ub((s + p).replace(/-/g, '+').replace(/_/g, '/')); }
 $('sub').addEventListener('click', async () => {
